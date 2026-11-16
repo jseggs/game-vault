@@ -13,6 +13,7 @@ Game Vault is a static web app with no server of its own. Each person copies a G
 
 - The first device to connect becomes the owner. Other devices join with invite links.
 - A family link can browse and log plays. It never receives prices or notes, and it cannot add games.
+- A view-only link shows the collection and each player's favorites to anyone. It never receives prices, notes, plays, or stats, and every write is refused. It opens without touching the visitor's own Game Vault connection.
 - Access keys live in the script's properties. The sheet is never published to the web.
 - With no sheet connected, the app runs as a demo on a bundled sample collection. Nothing is saved.
 
@@ -47,8 +48,8 @@ Settings has a BoardGameGeek card for the owner: add a game by name, or import a
 The app talks only to the web app URL of the person's own sheet script (`sheet/Code.gs`).
 
 - `GET ?action=claim` makes the first caller the owner and returns `ownerKey`. Later calls are refused.
-- `GET ?action=data&key=…` returns `{status, version, role, games, plays, players, stats, familyKey}`. Rows are objects keyed by the sheet's column headers. `role` is `owner` or `family`; family access never receives `Price Paid`, `Notes`, or stats.
-- `POST` with a JSON body containing `key` and `action` (`add`, `delete`, `rate`, `exclude`, `ping`, and the owner-only `saveGames`) writes to the sheet.
+- `GET ?action=data&key=…` returns `{status, version, role, games, plays, players, stats}`. Rows are objects keyed by the sheet's column headers. `role` is `owner`, `family`, or `viewer`. Owners also receive `familyKey` and `viewKey`. Family access never receives `Price Paid`, `Notes`, or stats; viewers also receive no plays.
+- `POST` with a JSON body containing `key` and `action` (`add`, `delete`, `rate`, `exclude`, `ping`, and the owner-only `saveGames`) writes to the sheet. Viewers can only `ping`.
 
 ## Running locally
 

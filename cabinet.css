@@ -3619,3 +3619,14 @@ pre {
   color: var(--text3); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px;
 }
 .bgg-check { display: flex; align-items: center; gap: 8px; margin: -8px 0 12px; color: var(--text2); font-size: 14px; }
+
+/* View-only links: collection and favorites only, nothing that changes data */
+body.view-only .nav-tab[data-tab="picker"],
+body.view-only .nav-tab[data-tab="plays"],
+body.view-only .nav-tab[data-tab="settings"],
+body.view-only #tab-stats > :not(.section-header):not(#player-favorites):not(.fav-label),
+body.view-only .modal .rating-editor,
+body.view-only .modal .modal-activity,
+body.view-only .demo-banner {
+  display: none !important;
+}

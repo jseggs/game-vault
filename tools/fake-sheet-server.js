@@ -208,6 +208,30 @@ function runTests() {
     const many = Array.from({length: 101}, (_, i) => ({'Game': 'G' + i}));
     assert.strictEqual(s.post({action: 'saveGames', key: claim.ownerKey, games: many}).status, 'error');
   });
+  const v = s.get({action: 'data', key: claim.ownerKey});
+  check('owner receives a view-only key', () => assert.ok(/^[a-f0-9]{64}$/.test(v.viewKey) && v.viewKey !== v.familyKey && v.viewKey !== claim.ownerKey));
+  const view = s.get({action: 'data', key: v.viewKey});
+  check('view-only gets games and players, never prices, notes, plays, stats, or keys', () => {
+    assert.strictEqual(view.role, 'viewer');
+    assert.ok(view.games.length > 0 && view.players.length === 2);
+    assert.ok(view.games.every(g => !('Notes' in g) && !('Price Paid' in g)));
+    assert.deepStrictEqual([view.plays.length, view.stats.length], [0, 0]);
+    assert.ok(!('familyKey' in view) && !('viewKey' in view));
+  });
+  check('view-only cannot write anything', () => {
+    const before = JSON.stringify(sheets);
+    for (const action of ['add', 'delete', 'rate', 'exclude', 'saveGames', 'wipe']) {
+      assert.strictEqual(s.post({action, key: v.viewKey, game: 'Azul', id: 'play-f', games: [{'Game': 'X'}], p1Rat: '1'}).code, 'view_only');
+    }
+    assert.strictEqual(JSON.stringify(sheets), before);
+    assert.strictEqual(s.post({action: 'ping', key: v.viewKey}).status, 'ok');
+  });
+  check('a sheet claimed before view links gets a view key on first owner sync', () => {
+    delete s.props.VIEW_KEY;
+    const again = s.get({action: 'data', key: claim.ownerKey});
+    assert.ok(/^[a-f0-9]{64}$/.test(again.viewKey) && again.viewKey !== v.viewKey);
+    assert.strictEqual(s.get({action: 'data', key: v.viewKey}).code, 'denied');
+  });
   console.log(`${n} checks passed`);
 }
 

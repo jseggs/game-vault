@@ -59,6 +59,11 @@
 </nav>
 
 <main class="app-shell">
+<div class="share-banner view-banner" id="view-banner" hidden>
+  <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#eye"></use></svg>
+  <span id="view-banner-text"><strong>View only.</strong> You're browsing a shared collection. Nothing here can be changed.</span>
+  <a class="btn btn-outline btn-sm" href="index.html">Get your own</a>
+</div>
 <div class="share-banner demo-banner" id="demo-banner" hidden>
   <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#eye"></use></svg>
   <span><strong>Demo.</strong> You're looking at a sample collection. Try anything: nothing is saved.</span>
@@ -234,7 +239,7 @@
     </div>
   </header>
   <div class="win-grid" id="win-stats"></div>
-  <div class="section-label">Player Favorites</div>
+  <div class="section-label fav-label">Player Favorites</div>
   <div class="favorites-grid" id="player-favorites"></div>
   <div class="section-label">Per-Game Win Records</div>
   <div class="twrap">
@@ -328,6 +333,7 @@
       <div class="settings-actions">
         <button class="btn btn-outline" id="invite-own" onclick="copyInviteLink('own')">Copy invite link</button>
         <button class="btn btn-outline" id="invite-family" onclick="copyInviteLink('family')" hidden>Copy family link</button>
+        <button class="btn btn-outline" id="invite-view" onclick="copyInviteLink('view')" hidden>Copy view-only link</button>
       </div>
       <div class="form-row" id="invite-output" hidden style="margin-top:16px;"><div class="fg">
         <label>Invite link</label>
@@ -440,6 +446,7 @@
       </div>
       <button class="btn btn-outline btn-sm" id="m-rate-save" onclick="saveGameRatings()">Save Ratings</button>
     </div>
+    <div class="modal-activity">
     <div class="msec">Win / Loss Record</div>
     <div id="m-wl"></div>
     <div class="msec">Play History</div>
@@ -471,6 +478,7 @@
       <div class="fg"><label>Notes</label><input class="fc" type="text" id="m-notes-in" placeholder="Optional..."></div>
     </div>
     <button class="btn btn-gold btn-sm" onclick="logModal()">Log Play</button>
+    </div>
   </div>
 </div>
 
@@ -546,13 +554,28 @@ const SAMPLE_PLAYERS = {
 // ═══════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════
-let cfg = JSON.parse(localStorage.getItem('gvc-cfg')||'{}');
+// A view-only link (#view=<web app URL>&key=<view key>) shows someone else's collection.
+// It stays in the address bar so the page can be reloaded or bookmarked, and nothing from it
+// is saved in this browser, so it never replaces this browser's own Game Vault connection.
+const VIEW_LINK = (()=>{
+  const match=location.hash.match(/^#view=([^&\s]+)&key=([A-Za-z0-9]{16,128})$/);
+  if(!match) return null;
+  let url='';
+  try{ url=decodeURIComponent(match[1]); }catch(error){ return null; }
+  const local=['localhost','127.0.0.1'].includes(location.hostname)&&/^http:\/\/(localhost|127\.0\.0\.1):\d+\/exec$/.test(url);
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url)&&!local) return null;
+  return {url,key:match[2]};
+})();
+const isView = () => Boolean(VIEW_LINK);
+let cfg = isView()
+  ? {scriptUrl:VIEW_LINK.url,accessKey:VIEW_LINK.key,role:'viewer'}
+  : JSON.parse(localStorage.getItem('gvc-cfg')||'{}');
 // Demo mode: no sheet connected. The app runs on the sample data above and nothing is saved.
 const isDemo = () => !cfg.scriptUrl;
 const readStored = (key) => { try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; } catch (error) { return []; } };
 // When connected, the last synced copy is kept in this browser so the app opens instantly and works offline.
-let GAMES = isDemo() ? SAMPLE_GAMES.map(g=>({...g})) : readStored('gvc-games');
-let plays = isDemo() ? SAMPLE_PLAYS.map(p=>({...p})) : readStored('gvc-plays');
+let GAMES = isDemo() ? SAMPLE_GAMES.map(g=>({...g})) : isView() ? [] : readStored('gvc-games');
+let plays = isDemo() ? SAMPLE_PLAYS.map(p=>({...p})) : isView() ? [] : readStored('gvc-plays');
 if (isDemo()) cfg.invested = SAMPLE_GAMES.reduce((sum,g)=>sum+(g.price||0),0).toLocaleString('en-US');
 let filters = {shelf:[],status:null,baseOnly:false};
 let picks = {shelf:[],played:null,exp:'no',coop:null,players:null};
@@ -593,7 +616,7 @@ let twoPlayerExcludedShelves = new Set([]);
 let twoPlayerExcludedGames = new Set(JSON.parse(localStorage.getItem('gvc-2p-excl') || '[]'));
 
 function save2pExclusions() {
-  if (isDemo()) return;
+  if (isDemo() || isView()) return;
   localStorage.setItem('gvc-2p-excl', JSON.stringify([...twoPlayerExcludedGames]));
 }
 
@@ -638,12 +661,8 @@ function includeGame(name) {
 
 async function pushExclusion(name, excluded) {
   if (!cfg.scriptUrl) return;
-  try {
-    await fetch(cfg.scriptUrl, {
-      method: 'POST',
-      body: JSON.stringify({action: 'exclude', game: name, excluded: excluded})
-    });
-  } catch(e) {}
+  const result = await postToSheets({action: 'exclude', game: name, excluded: excluded});
+  if (!result.ok) showToast(result.error || 'Could not save that to the sheet.', '#ff5c7a');
 }
 
 function toggleExcluded() {
@@ -729,9 +748,9 @@ function supportsPlayerCount(g, n) {
   return false;
 }
 
-function savePlays(){ if(!isDemo()) localStorage.setItem('gvc-plays',JSON.stringify(plays)); }
-function saveCfg(){ if(!isDemo()) localStorage.setItem('gvc-cfg',JSON.stringify(cfg)); }
-function saveGlobalFilters(){localStorage.setItem('gvc-global-filters', JSON.stringify(globalFilters));}
+function savePlays(){ if(!isDemo()&&!isView()) localStorage.setItem('gvc-plays',JSON.stringify(plays)); }
+function saveCfg(){ if(!isDemo()&&!isView()) localStorage.setItem('gvc-cfg',JSON.stringify(cfg)); }
+function saveGlobalFilters(){ if(!isView()) localStorage.setItem('gvc-global-filters', JSON.stringify(globalFilters)); }
 
 function iconUse(name, className='ui-icon'){
   return `<svg class="${className}" aria-hidden="true"><use href="${UI_ICON_SPRITE}#${name}"></use></svg>`;
@@ -1098,7 +1117,9 @@ function renderCollection(){
     <div class="stat-card"><div class="stat-num">${baseGames.length}</div><div class="stat-label">Base games</div></div>
     <div class="stat-card"><div class="stat-num">${expansions.length}</div><div class="stat-label">Expansions</div></div>
     <div class="stat-card"><div class="stat-num">${unplayedGames.length}</div><div class="stat-label">Unplayed</div></div>
-    ${cfg.role==='family'
+    ${cfg.role==='viewer'
+      ? `<div class="stat-card"><div class="stat-num">${getAvailableShelves().length}</div><div class="stat-label">Shelves</div></div>`
+      : cfg.role==='family'
       ? `<div class="stat-card"><div class="stat-num">${plays.length}</div><div class="stat-label">Plays logged</div></div>`
       : `<div class="stat-card stat-value"><div class="stat-num" id="stat-invested">${cfg.invested?'$'+cfg.invested:cfg.scriptUrl?'…':'n/a'}</div><div class="stat-label">Collection value</div></div>`}
   `;
@@ -1610,6 +1631,7 @@ function pickRandom(){
 // GOOGLE SHEETS SYNC
 // ═══════════════════════════════════════
 function cacheGames(){
+  if(isView()) return;
   try{ localStorage.setItem('gvc-games', JSON.stringify(GAMES)); }catch(error){}
 }
 
@@ -1694,6 +1716,7 @@ async function syncNow(readForm=true){
     data=await fetchSheetData();
   }catch(error){
     msg.textContent='⚠ Sync error: '+(error.name==='AbortError'?'Google Sheets took too long to respond.':error.message);
+    if(isView()) showViewError(error.name==='AbortError'?'Google Sheets took too long to respond. Try reloading.':error.message);
     console.error(error);
     return;
   }
@@ -1701,6 +1724,7 @@ async function syncNow(readForm=true){
   // "owner" sees everything. "family" never receives spend data, so there is no value to show.
   cfg.role=data.role;
   cfg.familyKey=data.role==='owner'?(data.familyKey||''):'';
+  cfg.viewKey=data.role==='owner'?(data.viewKey||''):'';
   const gameRows=normalizeSheetRows(data.games);
   if(!gameRows.length || !('Game' in gameRows[0])){
     msg.textContent='⚠ "Game" column not found in the Games sheet.';
@@ -1738,6 +1762,7 @@ async function syncNow(readForm=true){
   badge.className='sstatus st-sheets';
   badge.textContent='● Google Sheets';
   msg.textContent='✓ Synced with Google Sheets';
+  updateViewBanner();
   populateYearFilter();
   updatePlayerLabels();
   renderCollection();renderPlays();renderStats();
@@ -1753,6 +1778,7 @@ function showPlaySyncToast(result){
 }
 
 async function postToSheets(payload){
+  if(isView()) return {ok:false,error:'This is a view-only link. Nothing can be changed.'};
   if(isDemo()){
     // Nothing leaves the browser in demo mode. Report success so every feature can be tried.
     return {ok:true,data:{status:'ok',demo:true,playDeleted:true,ratingsUpdated:true}};
@@ -1873,8 +1899,11 @@ function updateAccessUI(){
   const note=document.getElementById('invite-note');
   if(own) own.textContent=owner?'Copy full-access link':'Copy invite link';
   if(family) family.hidden=!(owner&&cfg.familyKey);
+  const view=document.getElementById('invite-view');
+  if(view) view.hidden=!(owner&&cfg.viewKey);
   if(note) note.textContent=owner
-    ? 'Full-access link: everything you see, including spend and collection value. Family link: the collection plus logging plays and ratings, with no spend data or collection value. For view-only sharing, send the share page instead.'
+    ? 'Full-access link: everything you see, including prices and collection value. Family link: the collection plus logging plays and ratings, with no prices or collection value. View-only link: your collection and favorites for anyone, with no prices, notes, or plays, and no way to change anything.'
+      +(cfg.viewKey?'':' To get a view-only link, update the script in your sheet (see the setup guide).')
     : 'An invite link connects another phone or computer in one step, with the same access as this one.';
 }
 
@@ -1894,25 +1923,26 @@ const SCRIPT_URL_PATTERN={test:url=>/^https:\/\/script\.google\.com\/macros\/s\/
 
 async function copyInviteLink(kind){
   readConnectionFields();
-  const key=kind==='family'?cfg.familyKey:cfg.accessKey;
+  const key=kind==='family'?cfg.familyKey:kind==='view'?cfg.viewKey:cfg.accessKey;
   if(!SCRIPT_URL_PATTERN.test(cfg.scriptUrl)||!key){
     showToast('Connect and sync this device first.','#ff5c7a');
     return;
   }
-  const link=`${location.origin}${location.pathname}#connect=${encodeURIComponent(cfg.scriptUrl)}&key=${encodeURIComponent(key)}`;
+  const link=`${location.origin}${location.pathname}#${kind==='view'?'view':'connect'}=${encodeURIComponent(cfg.scriptUrl)}&key=${encodeURIComponent(key)}`;
+  const label=kind==='family'?'Family link':kind==='view'?'View-only link':'Full-access link';
   // Always show the link as well: some browsers report a successful copy without updating the system clipboard.
   const copied=await copyText(link);
   const box=document.getElementById('invite-output');
   if(box){
     box.hidden=false;
-    box.querySelector('label').textContent=(kind==='family'?'Family link':'Full-access link')+(copied?' (copied; or select it here)':' (select all and copy)');
+    box.querySelector('label').textContent=label+(copied?' (copied; or select it here)':' (select all and copy)');
     const field=box.querySelector('input');
     field.value=link;
     field.focus();
     field.select();
   }
   showToast(copied
-    ? (kind==='family'?'Family link copied.':'Full-access link copied. Share it only with people you trust.')
+    ? (kind==='family'?'Family link copied.':kind==='view'?'View-only link copied. Safe to post anywhere.':'Full-access link copied. Share it only with people you trust.')
     : 'Could not copy automatically. Copy the link shown below the buttons.', copied?undefined:'#ffe04a');
 }
 
@@ -2035,6 +2065,35 @@ function applyProjectLinks(){
   });
 }
 
+// View-only links show the collection and each player's favorites, and nothing that changes data.
+function applyViewMode(){
+  if(!isView()) return;
+  document.body.classList.add('view-only');
+  document.getElementById('view-banner').hidden=false;
+  const statsTab=document.querySelector('.nav-tab[data-tab="stats"]');
+  if(statsTab){ statsTab.setAttribute('aria-label','Favorites'); statsTab.querySelector('span').textContent='Favorites'; }
+  const stats=document.getElementById('tab-stats');
+  if(stats){
+    stats.querySelector('.eyebrow').textContent='Stage 2 · Favorites';
+    stats.querySelector('.page-title').textContent='Favorites';
+    stats.querySelector('.page-sub').textContent="Each player's highest-rated games.";
+  }
+  const collectionTitle=document.querySelector('#tab-collection .page-title');
+  if(collectionTitle) collectionTitle.textContent='The game vault';
+}
+
+function updateViewBanner(){
+  if(!isView()) return;
+  const names=[playerProfiles.p1.name,playerProfiles.p2.name].filter(name=>name&&!/^Player [12]$/.test(name));
+  const owners=names.length===2?`${names[0]} and ${names[1]}'s`:'a shared';
+  document.getElementById('view-banner-text').innerHTML=`<strong>View only.</strong> You're browsing ${escAttr(owners)} collection. Nothing here can be changed.`;
+}
+
+function showViewError(message){
+  const text=/access key/i.test(message)?'The owner may have turned this link off. Ask them for a new one.':message;
+  document.getElementById('view-banner-text').innerHTML=`<strong>This link isn't working.</strong> ${escAttr(text)}`;
+}
+
 function updateDemoUI(){
   const demo=isDemo();
   const banner=document.getElementById('demo-banner');
@@ -2074,7 +2133,7 @@ function loadCfgUI(){
     document.getElementById('sync-badge').className='sstatus st-sheets';
     document.getElementById('sync-badge').textContent='● Saved copy';
   }
-  verifyScriptConnection();
+  if(!isView()) verifyScriptConnection();
 }
 
 // ═══════════════════════════════════════
@@ -2315,7 +2374,8 @@ function applyPendingUpdate(){
 // INIT
 // ═══════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
-  acceptInviteLink();
+  applyViewMode();
+  if(!isView()) acceptInviteLink();
   updateDemoUI();
   applyProjectLinks();
   updateBggUI();
@@ -2340,7 +2400,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('update-banner-refresh')?.addEventListener('click', applyPendingUpdate);
   document.getElementById('update-banner-dismiss')?.addEventListener('click', dismissUpdateBanner);
   const requestedTab=new URLSearchParams(window.location.search).get('tab');
-  if(requestedTab&&['collection','picker','plays','stats','settings'].includes(requestedTab)){
+  const allowedTabs=isView()?['collection','stats']:['collection','picker','plays','stats','settings'];
+  if(requestedTab&&allowedTabs.includes(requestedTab)){
     document.querySelector(`.nav-tab[data-tab="${requestedTab}"]`)?.click();
   }
 });

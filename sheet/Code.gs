@@ -15,11 +15,14 @@
  *     family key  the collection plus logging plays and ratings. Prices and
  *                 notes are never sent to a family device, and a family
  *                 device cannot add games.
+ *     view key    read only: the collection, ratings, and player names. Never
+ *                 receives prices, notes, plays, or stats, and cannot change
+ *                 anything. Meant for a link you can post anywhere.
  * - Keys are kept in this script's private properties, never in the sheet.
  * - "Game Vault > Reset access keys" in the sheet menu revokes every device.
  */
 
-var SCRIPT_VERSION = 2;
+var SCRIPT_VERSION = 3;
 var GAMES_SHEET = 'Games';
 var PLAYS_SHEET = 'Plays';
 var PLAYERS_SHEET = 'Players';
@@ -69,6 +72,7 @@ function resetAccessKeys() {
   var props = PropertiesService.getScriptProperties();
   props.deleteProperty('OWNER_KEY');
   props.deleteProperty('FAMILY_KEY');
+  props.deleteProperty('VIEW_KEY');
   ui.alert('Access keys reset. Connect again by pasting your web app URL into the app.');
 }
 
@@ -95,6 +99,9 @@ function doPost(e) {
     var data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     var role = roleFor_(data.key);
     if (!role) return json_(denied_());
+    if (role === 'viewer' && data.action !== 'ping') {
+      return json_({status: 'error', code: 'view_only', message: 'This is a view-only link. Nothing can be changed.'});
+    }
     if (data.action === 'saveGames' && role !== 'owner') {
       return json_({status: 'error', code: 'owner_only', message: 'Only the owner can add games.'});
     }
@@ -140,6 +147,7 @@ function claim_() {
     var ownerKey = newKey_();
     props.setProperty('OWNER_KEY', ownerKey);
     props.setProperty('FAMILY_KEY', newKey_());
+    props.setProperty('VIEW_KEY', newKey_());
     return {status: 'ok', ownerKey: ownerKey};
   } finally {
     lock.releaseLock();
@@ -152,7 +160,27 @@ function roleFor_(key) {
   var props = PropertiesService.getScriptProperties();
   if (given === props.getProperty('OWNER_KEY')) return 'owner';
   if (given === props.getProperty('FAMILY_KEY')) return 'family';
+  if (given === props.getProperty('VIEW_KEY')) return 'viewer';
   return '';
+}
+
+/** The view-only key. Sheets claimed before view links existed get one on first use. */
+function viewKey_() {
+  var props = PropertiesService.getScriptProperties();
+  var key = props.getProperty('VIEW_KEY');
+  if (key) return key;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    key = props.getProperty('VIEW_KEY');
+    if (!key) {
+      key = newKey_();
+      props.setProperty('VIEW_KEY', key);
+    }
+    return key;
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ── Reading ─────────────────────────────────────────────────
@@ -160,12 +188,16 @@ function roleFor_(key) {
 function readAll_(role) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var owner = role === 'owner';
+  var viewer = role === 'viewer';
   var result = {status: 'ok', version: SCRIPT_VERSION, role: role};
   result.games = rows_(ss.getSheetByName(GAMES_SHEET), owner ? [] : PRIVATE_COLUMNS);
-  result.plays = rows_(ss.getSheetByName(PLAYS_SHEET), owner ? [] : ['Notes']);
+  result.plays = viewer ? [] : rows_(ss.getSheetByName(PLAYS_SHEET), owner ? [] : ['Notes']);
   result.players = rows_(ss.getSheetByName(PLAYERS_SHEET), []);
   result.stats = owner ? rows_(ss.getSheetByName(STATS_SHEET), []) : [];
-  if (owner) result.familyKey = PropertiesService.getScriptProperties().getProperty('FAMILY_KEY');
+  if (owner) {
+    result.familyKey = PropertiesService.getScriptProperties().getProperty('FAMILY_KEY');
+    result.viewKey = viewKey_();
+  }
   return result;
 }
 
