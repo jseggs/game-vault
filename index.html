@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Game Vault: your board game collection, in a sheet you own</title>
+<meta name="description" content="A free, open-source board game collection app. Browse your shelf, pick tonight's game, log plays, and settle the head-to-head score. Your data stays in a Google Sheet that you own.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Game Vault: your board game collection, in a sheet you own">
+<meta property="og:description" content="Free and open source. Browse your shelf, pick tonight's game, log plays, and settle the head-to-head score.">
+<meta property="og:url" content="https://jseggs.github.io/game-vault/">
+<meta property="og:image" content="https://jseggs.github.io/game-vault/assets/share-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0a0818">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cabinet.css">
+<script src="config.js"></script>
+<style>
+  body { padding-bottom: 0; overflow-x: hidden; }
+  .lp { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  .lp-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; }
+  .lp-brand { display: flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; }
+  .lp-brand img { width: 44px; height: 44px; border-radius: 10px; image-rendering: pixelated; }
+  .lp-brand span { font-family: var(--display); font-size: 12px; color: var(--yellow); text-shadow: 2px 2px 0 var(--pink); letter-spacing: .04em; }
+  .lp-nav { display: flex; align-items: center; gap: 22px; font-size: 15px; font-weight: 600; }
+  .lp-nav a { color: var(--text2); text-decoration: none; }
+  .lp-nav a:hover { color: var(--cyan); }
+
+  .lp-hero { padding: clamp(28px, 6vw, 72px) 0 0; text-align: center; }
+  .lp-kicker { font-family: var(--display); font-size: 10px; letter-spacing: .08em; color: var(--cyan); text-transform: uppercase; }
+  .lp-hero h1 {
+    margin: 18px auto 18px; max-width: 15ch;
+    font-size: clamp(38px, 7.4vw, 76px); font-weight: 800; letter-spacing: -.05em; line-height: .98;
+    text-shadow: 0 0 44px rgba(255, 45, 149, .45);
+  }
+  .lp-hero h1 em { font-style: normal; color: var(--yellow); }
+  .lp-lead { margin: 0 auto 30px; max-width: 58ch; color: var(--text2); font-size: clamp(17px, 2.1vw, 20px); }
+  .lp-cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .lp-cta .btn { padding: 14px 24px; font-size: 16px; text-decoration: none; }
+  .lp-fine { margin: 16px 0 0; color: var(--text3); font-size: 14px; }
+
+  .lp-screen {
+    margin: clamp(34px, 6vw, 64px) auto 0; border: 1px solid var(--border2); border-radius: 18px; overflow: hidden;
+    background: var(--surface);
+    box-shadow: 0 0 0 1px rgba(255, 45, 149, .25), 0 30px 90px rgba(0, 0, 0, .6), 0 0 120px rgba(155, 92, 255, .22);
+  }
+  .lp-screen img { display: block; width: 100%; height: auto; }
+
+  .lp-section { padding: clamp(56px, 9vw, 110px) 0 0; }
+  .lp-section > h2 { margin: 10px 0 12px; font-size: clamp(28px, 4.4vw, 42px); font-weight: 780; letter-spacing: -.04em; line-height: 1.05; }
+  .lp-section > p.lp-sub { margin: 0 0 36px; max-width: 62ch; color: var(--text2); font-size: 18px; }
+
+  .lp-feature { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 5vw, 60px); align-items: center; padding: clamp(28px, 5vw, 54px) 0; }
+  .lp-feature:nth-of-type(even) .lp-feature-copy { order: 2; }
+  .lp-feature h3 { margin: 10px 0 10px; font-size: clamp(24px, 3.2vw, 32px); font-weight: 760; letter-spacing: -.035em; line-height: 1.08; }
+  .lp-feature p { margin: 0 0 14px; color: var(--text2); font-size: 17px; }
+  .lp-feature ul { margin: 0; padding: 0; list-style: none; color: var(--text2); }
+  .lp-feature li { position: relative; margin-bottom: 8px; padding-left: 22px; }
+  .lp-feature li::before { content: ""; position: absolute; left: 0; top: .55em; width: 8px; height: 8px; background: var(--green); box-shadow: 0 0 10px var(--green); }
+  .lp-feature .lp-screen { margin: 0; border-radius: 14px; }
+  .lp-crop img { aspect-ratio: 16 / 9; object-fit: cover; object-position: 100% 100%; transform: scale(1.35); transform-origin: 100% 100%; }
+  .lp-tag { font-family: var(--display); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--pink); }
+
+  .lp-phone-row { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(24px, 5vw, 60px); align-items: center; }
+  .lp-phone { max-width: 300px; margin: 0 auto; border: 8px solid #1d1940; border-radius: 34px; overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 90px rgba(34, 227, 242, .18); }
+  .lp-phone img { display: block; width: 100%; height: auto; }
+
+  .lp-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .lp-step { padding: 24px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--surface); }
+  .lp-step b { display: grid; width: 38px; height: 38px; place-items: center; margin-bottom: 14px; border-radius: 8px; background: var(--yellow); color: #0a0818; font-family: var(--display); font-size: 12px; font-weight: 400; }
+  .lp-step h3 { margin: 0 0 8px; font-size: 20px; letter-spacing: -.02em; }
+  .lp-step p { margin: 0; color: var(--text2); }
+
+  .lp-own { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .lp-own div { padding: 22px 24px; border: 1px solid var(--border); border-radius: var(--radius); background: rgba(255, 255, 255, .02); }
+  .lp-own h3 { margin: 0 0 6px; font-size: 18px; color: var(--cyan); letter-spacing: -.01em; }
+  .lp-own p { margin: 0; color: var(--text2); }
+
+  .lp-final { margin-top: clamp(56px, 9vw, 110px); padding: clamp(34px, 6vw, 64px) 24px; border: 1px solid var(--border2); border-radius: 22px; text-align: center;
+    background: radial-gradient(120% 140% at 50% 0%, rgba(155, 92, 255, .28), rgba(16, 14, 34, .9) 60%); }
+  .lp-final h2 { margin: 0 0 10px; font-size: clamp(28px, 4.4vw, 42px); font-weight: 780; letter-spacing: -.04em; }
+  .lp-final p { margin: 0 auto 26px; max-width: 52ch; color: var(--text2); font-size: 18px; }
+  .lp-final img { width: 84px; height: auto; margin-bottom: 14px; image-rendering: pixelated; }
+
+  .lp-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; margin-top: 54px; padding: 26px 0 44px; border-top: 1px solid var(--border); color: var(--text3); font-size: 14px; }
+  .lp-foot a { color: var(--text2); }
+  .lp-foot-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .lp-bgg { display: flex; align-items: center; gap: 12px; }
+  .lp-bgg img { height: 30px; width: auto; }
+
+  @media (max-width: 820px) {
+    .lp-nav a.lp-hide-sm { display: none; }
+    .lp-feature, .lp-phone-row { grid-template-columns: 1fr; }
+    .lp-feature:nth-of-type(even) .lp-feature-copy { order: 0; }
+    .lp-steps, .lp-own { grid-template-columns: 1fr; }
+    .lp-foot { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="lp">
+  <header class="lp-top">
+    <a class="lp-brand" href="index.html"><img src="assets/logo-192.png" alt=""><span>Game Vault</span></a>
+    <div class="lp-nav" role="navigation" aria-label="Site">
+      <a class="lp-hide-sm" href="#features">Features</a>
+      <a class="lp-hide-sm" href="#how">How it works</a>
+      <a class="lp-hide-sm" id="repo-link-top" href="#" target="_blank" rel="noopener" hidden>Source</a>
+      <a class="btn btn-outline btn-sm" href="app.html">Open the demo</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="lp-hero">
+      <div class="lp-kicker">Free &middot; Open source &middot; No account</div>
+      <h1>Your board games, in a sheet <em>you own</em></h1>
+      <p class="lp-lead">Game Vault turns a Google Sheet into a collection app for your shelf. Browse your games, let it pick tonight's, log who won, and watch two pixel dinosaurs settle the score.</p>
+      <div class="lp-cta">
+        <a class="btn btn-gold" href="app.html">Try the demo</a>
+        <a class="btn btn-outline" href="setup.html">Set up your own</a>
+      </div>
+      <p class="lp-fine">The demo runs on a sample collection. Nothing to sign up for, nothing saved.</p>
+      <div class="lp-screen"><img src="assets/shots/collection.jpg" width="1600" height="1000" alt="The Game Vault collection screen: play progress, collection value, shelf filters, and game covers."></div>
+    </section>
+
+    <section class="lp-section" id="features">
+      <div class="lp-kicker">What it does</div>
+      <h2>Built for the question "what are we playing tonight?"</h2>
+      <p class="lp-sub">Four screens, each doing one job. All of them work in the demo.</p>
+
+      <div class="lp-feature">
+        <div class="lp-feature-copy">
+          <div class="lp-tag">Stage 1 &middot; Collection</div>
+          <h3>See the whole shelf at a glance</h3>
+          <p>Every game with its cover, player count, BoardGameGeek score, and your own ratings.</p>
+          <ul>
+            <li>Filter by shelf, player count, played or unplayed</li>
+            <li>Track how much of the collection you have played</li>
+            <li>Collection value, visible only to the owner</li>
+          </ul>
+        </div>
+        <div class="lp-screen lp-crop"><img src="assets/shots/collection.jpg" width="1600" height="1000" loading="lazy" alt="Shelf filters and game covers on the collection screen."></div>
+      </div>
+
+      <div class="lp-feature">
+        <div class="lp-feature-copy">
+          <div class="lp-tag">Stage 2 &middot; Game picker</div>
+          <h3>Let it make the call</h3>
+          <p>Set the table rules, press start, and get one game. No more twenty minutes in front of the shelf.</p>
+          <ul>
+            <li>Narrow by shelf, player count, or never played</li>
+            <li>A two-player mode that knows which games shine at two</li>
+            <li>Keep a game out of two-player picks with one tap</li>
+          </ul>
+        </div>
+        <div class="lp-screen"><img src="assets/shots/picker.jpg" width="1600" height="1000" loading="lazy" alt="Game picker screen with table rules and tonight's pick."></div>
+      </div>
+
+      <div class="lp-feature">
+        <div class="lp-feature-copy">
+          <div class="lp-tag">Stage 3 &middot; Play log</div>
+          <h3>Log a play in a few taps</h3>
+          <p>Pick the game, pick the winner, add a note if you like. Each player can rate the game while it is fresh.</p>
+          <ul>
+            <li>Plays are written straight to your sheet</li>
+            <li>Ratings update the game's row</li>
+            <li>Works from any phone you have invited</li>
+          </ul>
+        </div>
+        <div class="lp-screen"><img src="assets/shots/plays.jpg" width="1600" height="1000" loading="lazy" alt="Play log screen with a form for logging a play and a list of recent plays."></div>
+      </div>
+
+      <div class="lp-feature">
+        <div class="lp-feature-copy">
+          <div class="lp-tag">Stage 4 &middot; High scores</div>
+          <h3>Settle it with a dino duel</h3>
+          <p>Your head-to-head record, staged as an arcade fighter. Each player picks a dinosaur and a color.</p>
+          <ul>
+            <li>Total wins and the last five results</li>
+            <li>Per-game win records and each player's favorites</li>
+            <li>Eight dinosaurs to choose from</li>
+          </ul>
+        </div>
+        <div class="lp-screen"><img src="assets/shots/stats.jpg" width="1600" height="1000" loading="lazy" alt="Stats screen showing a velociraptor and a triceratops facing off with health bars."></div>
+      </div>
+    </section>
+
+    <section class="lp-section">
+      <div class="lp-phone-row">
+        <div>
+          <div class="lp-kicker">On your phone</div>
+          <h2 style="margin:10px 0 12px;font-size:clamp(28px,4.4vw,42px);font-weight:780;letter-spacing:-.04em;line-height:1.05;">Add it to your home screen</h2>
+          <p class="lp-sub" style="margin-bottom:18px;">Game Vault is a web app. There is nothing to download from an app store. Open it on your phone, add it to the home screen, and it behaves like any other app.</p>
+          <div class="lp-own" style="grid-template-columns:1fr;">
+            <div><h3>Fill it from BoardGameGeek</h3><p>Add a game by name, or import the games you own on BoardGameGeek by username. Player counts, scores, categories, and covers come along.</p></div>
+            <div><h3>Share with the family</h3><p>Send an invite link. A family link can browse and log plays, and never sees what you paid.</p></div>
+          </div>
+        </div>
+        <div class="lp-phone"><img src="assets/shots/phone.jpg" width="800" height="1600" loading="lazy" alt="Game Vault on a phone."></div>
+      </div>
+    </section>
+
+    <section class="lp-section" id="how">
+      <div class="lp-kicker">How it works</div>
+      <h2>About five minutes, no code</h2>
+      <p class="lp-sub">You need a Google account and a computer for the setup. After that it runs on your phone.</p>
+      <div class="lp-steps">
+        <div class="lp-step"><b>1</b><h3>Copy the sheet</h3><p>One click makes your own copy of the Game Vault sheet. Type your player names and your games.</p></div>
+        <div class="lp-step"><b>2</b><h3>Switch on the connection</h3><p>The sheet carries a small script. Deploy it from the sheet's menu and Google gives you a private address.</p></div>
+        <div class="lp-step"><b>3</b><h3>Connect the app</h3><p>Paste that address into Game Vault. The first device becomes the owner and can invite the rest.</p></div>
+      </div>
+    </section>
+
+    <section class="lp-section">
+      <div class="lp-kicker">What you own</div>
+      <h2>Your data never leaves your Google account</h2>
+      <p class="lp-sub">There is no Game Vault server holding your collection. The app is a screen in front of your own sheet.</p>
+      <div class="lp-own">
+        <div><h3>The sheet is yours</h3><p>Edit it by hand, add columns, export it, or delete it. If Game Vault disappeared tomorrow, you would still have everything.</p></div>
+        <div><h3>The script sees one spreadsheet</h3><p>It asks Google for access to the sheet it lives in and nothing else. Not your Drive, not your other sheets.</p></div>
+        <div><h3>Every device needs a key</h3><p>The sheet is never published to the web. Lost a phone? Reset the keys from the sheet's menu.</p></div>
+        <div><h3>The code is open</h3><p>Read it, change it, host your own copy. BoardGameGeek lookups send only a search phrase or a BGG username.</p></div>
+      </div>
+    </section>
+
+    <section class="lp-final">
+      <img src="assets/dinos/trex.png" alt="">
+      <h2>Press start</h2>
+      <p>Poke around the demo first. If it fits your table, the setup guide walks you through the rest.</p>
+      <div class="lp-cta">
+        <a class="btn btn-gold" href="app.html">Try the demo</a>
+        <a class="btn btn-outline" href="setup.html">Set up your own</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lp-foot">
+    <div class="lp-bgg">
+      <a href="https://boardgamegeek.com" target="_blank" rel="noopener"><img src="assets/powered-by-bgg-rgb.svg" alt="Powered by BoardGameGeek"></a>
+      <span>Game data and cover images come from BoardGameGeek.</span>
+    </div>
+    <div class="lp-foot-links">
+      <a href="setup.html">Setup guide</a>
+      <a id="repo-link" href="#" target="_blank" rel="noopener" hidden>Source code</a>
+      <a id="support-link" href="#" target="_blank" rel="noopener" hidden>Support the project</a>
+    </div>
+  </footer>
+</div>
+<script>
+  // Optional links come from config.js. A link with no address stays hidden.
+  (function () {
+    var config = window.GAME_VAULT_CONFIG || {};
+    [['repo-link', config.repoUrl], ['repo-link-top', config.repoUrl], ['support-link', config.supportUrl]].forEach(function (pair) {
+      var link = document.getElementById(pair[0]);
+      if (!link || !/^https:\/\//.test(pair[1] || '')) return;
+      link.href = pair[1];
+      link.hidden = false;
+    });
+  })();
+</script>
+</body>
+</html>

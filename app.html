@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Game Vault — Board Game Collection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cabinet.css">
+<script src="config.js"></script>
+
+<meta name="theme-color" content="#0a0818">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Game Vault">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-512.png">
+</head>
+<body>
+<div class="cabinet-frame">
+<nav aria-label="Primary navigation">
+  <div class="brand-zone">
+    <div class="nav-brand">
+      <img class="brand-mark" src="assets/logo-192.png" alt="">
+      <span class="brand-copy">
+        <span class="brand-title">Game Vault</span>
+        <span class="brand-sub">Board game arcade</span>
+      </span>
+    </div>
+  </div>
+  <div class="nav-tabs" role="tablist" aria-label="App sections">
+    <button type="button" role="tab" class="nav-tab active" data-tab="collection" aria-label="Collection" aria-selected="true" aria-controls="tab-collection">
+      <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#collection"></use></svg>
+      <span>Collection</span>
+    </button>
+    <button type="button" role="tab" class="nav-tab" data-tab="picker" aria-label="Pick a Game" aria-selected="false" aria-controls="tab-picker">
+      <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#picker"></use></svg>
+      <span>Pick a game</span>
+    </button>
+    <button type="button" role="tab" class="nav-tab" data-tab="plays" aria-label="Play Log" aria-selected="false" aria-controls="tab-plays">
+      <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#plays"></use></svg>
+      <span>Play Log</span>
+    </button>
+    <button type="button" role="tab" class="nav-tab" data-tab="stats" aria-label="Stats" aria-selected="false" aria-controls="tab-stats">
+      <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#stats"></use></svg>
+      <span>Stats</span>
+    </button>
+    <button type="button" role="tab" class="nav-tab" data-tab="settings" aria-label="Settings" aria-selected="false" aria-controls="tab-settings">
+      <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#settings"></use></svg>
+      <span>Settings</span>
+    </button>
+  </div>
+  <div class="cabinet-id" aria-hidden="true">
+    <img class="cabinet-id-dino" src="assets/dinos/trex.png" alt="">
+    <span class="cabinet-id-copy"><strong>INSERT COIN</strong><br>Good games. Great nights.</span>
+  </div>
+</nav>
+
+<main class="app-shell">
+<div class="share-banner demo-banner" id="demo-banner" hidden>
+  <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#eye"></use></svg>
+  <span><strong>Demo.</strong> You're looking at a sample collection. Try anything: nothing is saved.</span>
+  <button class="btn btn-outline btn-sm" type="button" onclick="document.querySelector('.nav-tab[data-tab=settings]').click()">Make it yours</button>
+</div>
+<!-- COLLECTION -->
+<div class="section active" id="tab-collection" data-screen="Collection">
+  <div class="collection-hero">
+    <div class="collection-title-block">
+      <div class="eyebrow">Stage 1 · Collection</div>
+      <div class="page-title">Your game vault</div>
+      <div class="page-sub" id="col-sub">Loading...</div>
+    </div>
+    <div class="stats-row" id="col-stats"></div>
+  </div>
+  <div class="filters-bar">
+    <label class="search-control" for="search-input">
+      <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#search"></use></svg>
+      <input class="fsearch" type="text" id="search-input" placeholder="Search games" oninput="renderCollection()">
+    </label>
+    <div class="fgrp" id="collection-shelf-group">
+      <span class="fgrp-lbl">Shelf</span>
+    </div>
+    <details class="status-menu">
+      <summary>
+        <span>Filters</span>
+        <svg class="ui-icon" aria-hidden="true"><use href="assets/ui-icons.svg#chevron"></use></svg>
+      </summary>
+      <div class="status-panel">
+        <div class="fgrp status-group">
+          <span class="fgrp-lbl">Played</span>
+          <button class="fbtn active" onclick="setFilter('status',null,this)">All</button>
+          <button class="fbtn" onclick="setFilter('status','played',this)">Played</button>
+          <button class="fbtn" onclick="setFilter('status','unplayed',this)">Unplayed</button>
+        </div>
+        <div class="fgrp type-group">
+          <span class="fgrp-lbl">Type</span>
+          <button class="fbtn active" id="type-filter-all" onclick="setBaseOnly(false)">Include expansions</button>
+          <button class="fbtn" id="type-filter-base" onclick="setBaseOnly(true)">Base games only</button>
+        </div>
+        <div class="fgrp kids-group">
+          <span class="fgrp-lbl">Kids games</span>
+          <button class="fbtn" id="kids-filter-hide" onclick="setKidsFilter('0')">No kids games</button>
+          <button class="fbtn" id="kids-filter-show" onclick="setKidsFilter('1')">Include kids</button>
+        </div>
+      </div>
+    </details>
+  </div>
+  <div class="game-grid" id="game-grid"></div>
+  <div class="bgg-credit">
+    <a href="https://boardgamegeek.com" target="_blank" rel="noreferrer">
+      <img src="assets/powered-by-bgg-rgb.svg" alt="Powered by BoardGameGeek">
+    </a>
+  </div>
+</div>
+
+<!-- PICKER -->
+<div class="section" id="tab-picker" data-screen="Randomizer">
+  <header class="section-header">
+    <div>
+      <div class="eyebrow">Stage 2 · Game picker</div>
+      <div class="page-title">What are we playing?</div>
+      <div class="page-sub">Set the table rules. We’ll make the final call.</div>
+    </div>
+  </header>
+  <div class="pick-box">
+    <div class="pick-spotlight">
+      <div class="pick-cover pick-empty" id="pick-cover" aria-hidden="true">
+        <img class="pick-mascot" src="assets/dinos/pterodactyl.png" alt="">
+        <span class="pick-empty-label">Press start</span>
+      </div>
+      <div class="pick-copy">
+        <div class="pick-title">Tonight’s pick</div>
+        <div class="pick-result" id="pick-result">Ready when you are</div>
+        <div class="pick-detail" id="pick-detail">Choose a few preferences—or leave it wide open.</div>
+        <button class="btn btn-gold pick-action" onclick="pickRandom()">▶ Press start</button>
+      </div>
+    </div>
+    <div class="pick-controls">
+      <div class="pctrls" id="picker-shelf-group">
+        <span class="fgrp-lbl">Shelf</span>
+      </div>
+      <div class="pctrls">
+        <span class="fgrp-lbl">History</span>
+        <button class="fbtn active" onclick="setPick('played',null,this)">Any</button>
+        <button class="fbtn" onclick="setPick('played','yes',this)">Played Before</button>
+        <button class="fbtn" onclick="setPick('played','no',this)">Never Played</button>
+      </div>
+      <div class="pctrls">
+        <span class="fgrp-lbl">Game type</span>
+        <button class="fbtn active" onclick="setPick('exp','no',this)">Base Games Only</button>
+        <button class="fbtn" onclick="setPick('exp',null,this)">Include Expansions</button>
+      </div>
+      <div class="pctrls">
+        <span class="fgrp-lbl">Co-op</span>
+        <button class="fbtn active" onclick="setPick('coop',null,this)">Either</button>
+        <button class="fbtn" onclick="setPick('coop','yes',this)">Co-op only</button>
+        <button class="fbtn" onclick="setPick('coop','no',this)">No co-op</button>
+      </div>
+      <div class="pctrls">
+        <span class="fgrp-lbl">Player count</span>
+        <button class="fbtn active" onclick="setPick('players',null,this)">Any</button>
+        <button class="fbtn" onclick="setPick('players','1',this)">1</button>
+        <button class="fbtn" onclick="setPick('players','2',this)">2</button>
+        <button class="fbtn" onclick="setPick('players','3',this)">3</button>
+        <button class="fbtn" onclick="setPick('players','4',this)">4</button>
+        <button class="fbtn" onclick="setPick('players','5',this)">5</button>
+        <button class="fbtn" onclick="setPick('players','6',this)">6</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYS -->
+<div class="section" id="tab-plays" data-screen="Play Log">
+  <header class="section-header">
+    <div>
+      <div class="eyebrow">Stage 3 · Sessions</div>
+      <div class="page-title">Play log</div>
+      <div class="page-sub">Record who played, who won, and what happened.</div>
+    </div>
+  </header>
+  <div class="sbox">
+    <div class="stitle">Add a play</div>
+    <div class="form-row">
+      <div class="fg" style="flex:2;min-width:170px;">
+        <label>Game</label>
+        <input class="fc" id="log-game" list="log-game-list" placeholder="Start typing a game title..." autocomplete="off">
+        <datalist id="log-game-list"></datalist>
+      </div>
+      <div class="fg" style="max-width:138px;">
+        <label>Date</label>
+        <input type="date" class="fc" id="log-date">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Winner</label>
+        <select class="fc" id="log-winner">
+          <option value="">— Select —</option>
+          <option value="Player 1">Player 1</option>
+          <option value="Player 2">Player 2</option>
+          <option value="Tie">Tie</option>
+          <option value="N/A (Coop)">N/A – Cooperative</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="fg" style="max-width:100px;">
+        <label>Player 1 rating (1-10)</label>
+        <input class="fc" type="number" id="log-p1rat" min="1" max="10" placeholder="1-10">
+      </div>
+      <div class="fg" style="max-width:100px;">
+        <label>Player 2 rating (1-10)</label>
+        <input class="fc" type="number" id="log-p2rat" min="1" max="10" placeholder="1-10">
+      </div>
+      <div class="fg">
+        <label>Notes (optional)</label>
+        <input class="fc" type="text" id="log-notes" placeholder="Quick notes...">
+      </div>
+    </div>
+    <button class="btn btn-gold" onclick="logPlay()">Log Play</button>
+  </div>
+  <div id="play-log-list"></div>
+</div>
+
+<!-- STATS -->
+<div class="section" id="tab-stats" data-screen="Scoreboard">
+  <header class="section-header">
+    <div>
+      <div class="eyebrow">Stage 4 · High scores</div>
+      <div class="page-title">Stats</div>
+      <div class="page-sub">Head-to-head records, favorites, and the games still waiting.</div>
+    </div>
+  </header>
+  <div class="win-grid" id="win-stats"></div>
+  <div class="section-label">Player Favorites</div>
+  <div class="favorites-grid" id="player-favorites"></div>
+  <div class="section-label">Per-Game Win Records</div>
+  <div class="twrap">
+    <table class="st records-table">
+      <thead><tr>
+        <th>Game</th><th>Plays</th><th id="stats-player-one-head">Player 1 W</th><th id="stats-player-two-head">Player 2 W</th><th>Ties/Coop</th><th>Leader</th>
+      </tr></thead>
+      <tbody id="stats-body"></tbody>
+    </table>
+  </div>
+
+  <div class="section-heading-row">
+    <div class="section-label">2-Player Games</div>
+  </div>
+
+  <div class="filters-bar" style="margin-bottom:.9rem;">
+    <div class="fgrp">
+      <button class="fbtn" id="2p-mode-best" onclick="set2pMode('best',this)">Best at 2</button>
+      <button class="fbtn active" id="2p-mode-good" onclick="set2pMode('good',this)">Good at 2</button>
+    </div>
+  </div>
+  <div class="twoplayer-summary" id="twoplayer-stats"></div>
+  <div class="twrap">
+    <table class="st twoplayer-table">
+      <thead><tr>
+        <th>Game</th><th>Shelf</th><th>Best At</th><th>Status</th><th style="width:40px;"></th>
+      </tr></thead>
+      <tbody id="twoplayer-body"></tbody>
+    </table>
+  </div>
+  <div style="margin-top:1.4rem;">
+    <div class="section-label excluded-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="excluded-wrap" onclick="toggleExcluded()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleExcluded()}">
+      <span id="excl-arrow">▸</span> Excluded Games <span id="excl-count" style="color:var(--text3);"></span>
+    </div>
+    <div id="excluded-wrap" style="display:none;margin-top:.7rem;">
+      <div class="twrap">
+        <table class="st">
+          <thead><tr>
+            <th>Game</th><th>Shelf</th><th>Best At</th><th style="width:40px;"></th>
+          </tr></thead>
+          <tbody id="excluded-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="section" id="tab-settings" data-screen="Setup">
+  <header class="section-header">
+    <div>
+      <div class="eyebrow">Service menu</div>
+      <div class="page-title">Settings</div>
+      <div class="page-sub">Manage data sources, collection defaults, and player profiles.</div>
+    </div>
+  </header>
+
+  <div class="settings-grid">
+    <section class="sbox settings-connection">
+      <div class="stitle">
+        Data Connection
+        <span id="sync-badge" class="sstatus st-local">● Demo data</span>
+      </div>
+      <p class="settings-intro">Game Vault runs on a Google Sheet that you own. Paste your sheet's web app URL to connect the first device, or an invite link to add another. The connection is stored only in this browser.</p>
+      <div class="form-row"><div class="fg">
+        <label for="settings-invite">Web app URL or invite link</label>
+        <input class="fc" id="settings-invite" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div></div>
+      <div class="settings-actions" style="margin:-4px 0 20px;">
+        <button class="btn btn-gold" onclick="connectFromPastedInvite('settings-invite')">Connect</button>
+      </div>
+      <details class="advanced-connection">
+      <summary>Enter the URL and key by hand</summary>
+      <div class="form-row" style="margin-top:14px;"><div class="fg">
+        <label>Apps Script Web App URL</label>
+        <input class="fc" id="cfg-script" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" spellcheck="false">
+        <span id="script-connection-status" class="connection-status"></span>
+      </div></div>
+      <div class="form-row"><div class="fg">
+        <label>Access key</label>
+        <input class="fc" id="cfg-key" type="password" placeholder="Filled in by your invite link" autocomplete="off" spellcheck="false">
+      </div></div>
+      <div class="settings-actions">
+        <button class="btn btn-outline" onclick="saveConfig()">Save &amp; Sync</button>
+      </div>
+      </details>
+      <div class="settings-actions">
+        <button class="btn btn-outline" onclick="syncNow()">Sync Now</button>
+        <span id="sync-msg"></span>
+      </div>
+      <div class="settings-actions">
+        <button class="btn btn-outline" id="invite-own" onclick="copyInviteLink('own')">Copy invite link</button>
+        <button class="btn btn-outline" id="invite-family" onclick="copyInviteLink('family')" hidden>Copy family link</button>
+      </div>
+      <div class="form-row" id="invite-output" hidden style="margin-top:16px;"><div class="fg">
+        <label>Invite link</label>
+        <input class="fc" type="text" readonly onfocus="this.select()" autocomplete="off" spellcheck="false">
+      </div></div>
+      <p class="settings-note" id="invite-note">An invite link connects another phone or computer in one step.</p>
+      <div class="settings-actions">
+        <button class="btn btn-outline btn-sm" id="disconnect-button" type="button" onclick="disconnectSheet()" hidden>Disconnect this device</button>
+      </div>
+    </section>
+
+    <div class="settings-stack">
+      <section class="sbox">
+        <div class="stitle">Default Collection View</div>
+        <p class="settings-intro">These filters are stored only in this browser and apply to Collection, Picker, Play Log, and Stats.</p>
+        <div class="form-row">
+          <div class="fg">
+            <label>Include kids' games?</label>
+            <select class="fc" id="gf-kids" onchange="applyGlobalFilters()">
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Year bought</label>
+            <select class="fc" id="gf-year" onchange="applyGlobalFilters()">
+              <option value="">All years</option>
+            </select>
+          </div>
+        </div>
+        <div id="gf-active-msg" class="filter-status">Global filter active</div>
+      </section>
+
+      <section class="sbox">
+        <div class="stitle">Player Avatars</div>
+        <p class="settings-intro">The Players sheet controls each fighter. Player #1 and #2 supply the display name, dinosaur, and color used throughout the app.</p>
+        <div class="roster-preview" id="roster-preview"></div>
+        <p class="settings-note">Dinosaurs: T-Rex, Velociraptor, Triceratops, Ankylosaurus, Brachiosaurus, Pterodactyl, Spinosaurus, Stegosaurus. Colors: cyan, gold, pink, purple, lime, orange, teal, or red.</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="sbox" id="bgg-card" hidden>
+    <div class="stitle">BoardGameGeek</div>
+    <p class="settings-intro">Add a game by name, or bring in your whole BoardGameGeek collection. Player counts, scores, categories, and covers are filled in for you. Only your search or BGG username goes to the lookup service. Your sheet is never shared with it.</p>
+    <div class="form-row"><div class="fg">
+      <label for="bgg-shelf">Shelf for new games</label>
+      <input class="fc" id="bgg-shelf" list="bgg-shelf-options" value="Unsorted" maxlength="40" autocomplete="off">
+      <datalist id="bgg-shelf-options"></datalist>
+    </div></div>
+    <form class="form-row bgg-row" onsubmit="event.preventDefault();bggSearch()"><div class="fg">
+      <label for="bgg-query">Add a game</label>
+      <input class="fc" id="bgg-query" type="search" placeholder="Game name" maxlength="80" autocomplete="off">
+    </div>
+    <button class="btn btn-gold" type="submit">Search</button></form>
+    <div class="bgg-results" id="bgg-results" aria-live="polite"></div>
+    <form class="form-row bgg-row" onsubmit="event.preventDefault();bggFindCollection()"><div class="fg">
+      <label for="bgg-user">Import a BoardGameGeek collection</label>
+      <input class="fc" id="bgg-user" placeholder="BGG username" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <button class="btn btn-outline" type="submit">Find games</button></form>
+    <label class="bgg-check"><input type="checkbox" id="bgg-expansions" onchange="bggShowCollectionSummary()"> Include expansions</label>
+    <p class="settings-note" id="bgg-import-status" aria-live="polite"></p>
+    <div class="settings-actions">
+      <button class="btn btn-gold" id="bgg-import-go" type="button" onclick="bggImportCollection()" hidden>Import</button>
+    </div>
+    <p class="settings-note">Games already in your vault are kept as they are. Only empty BoardGameGeek columns are filled in.</p>
+  </section>
+
+  <div class="sbox">
+    <div class="stitle">Make it yours</div>
+    <p class="settings-intro">Game Vault is free and open source. Your collection lives in a Google Sheet that you own; this app is only the screen in front of it. Setup takes about five minutes: copy the sheet, switch on its connection, and paste its web app URL above.</p>
+    <div class="settings-actions">
+      <a class="btn btn-gold" id="guide-link" href="setup.html">Open the setup guide</a>
+      <a class="btn btn-outline" id="repo-link" href="#" target="_blank" rel="noopener" hidden>Source code</a>
+      <a class="btn btn-outline" id="support-link" href="#" target="_blank" rel="noopener" hidden>Support the project</a>
+    </div>
+  </div>
+</div>
+</main>
+
+<div class="cabinet-footer">
+  <span>Game Vault</span>
+  <span>Collect · Play · Remember · © 198X</span>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="moverlay" id="moverlay" onclick="maybeClose(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <button class="mclose" onclick="closeModal()" aria-label="Close game details">×</button>
+    <div class="modal-game-head">
+      <div class="modal-cover" id="m-cover"></div>
+      <div class="modal-game-copy">
+        <div class="modal-kicker">Game details</div>
+        <div class="mtitle" id="m-name"></div>
+        <div class="mcat" id="m-cat"></div>
+      </div>
+    </div>
+    <div class="mgrid" id="m-grid"></div>
+    <div id="m-notes"></div>
+    <div class="rating-editor">
+      <div class="rating-editor-head">
+        <div class="rating-editor-title">Rate This Game</div>
+        <div class="rating-editor-sub">No play required</div>
+      </div>
+      <div class="form-row" style="margin-bottom:.65rem;">
+        <div class="fg" style="max-width:110px;"><label>Player 1 rating</label><input class="fc" type="number" id="m-rate-p1" min="1" max="10" step="0.5" placeholder="1-10"></div>
+        <div class="fg" style="max-width:110px;"><label>Player 2 rating</label><input class="fc" type="number" id="m-rate-p2" min="1" max="10" step="0.5" placeholder="1-10"></div>
+      </div>
+      <button class="btn btn-outline btn-sm" id="m-rate-save" onclick="saveGameRatings()">Save Ratings</button>
+    </div>
+    <div class="msec">Win / Loss Record</div>
+    <div id="m-wl"></div>
+    <div class="msec">Play History</div>
+    <div class="plays-wrap" id="m-plays"></div>
+    <div class="msec">Log a Play for This Game</div>
+    <div class="form-row">
+      <div class="fg" style="max-width:138px;"><label>Date</label><input type="date" class="fc" id="m-date"></div>
+      <div class="fg">
+        <label>Winner</label>
+        <select class="fc" id="m-winner">
+          <option value="">— Select —</option>
+          <option value="Player 1">Player 1</option>
+          <option value="Player 2">Player 2</option>
+          <option value="Tie">Tie</option>
+          <option value="N/A (Coop)">N/A – Cooperative</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg" style="max-width:90px;">
+        <label>Player 1 rating</label>
+        <input class="fc" type="number" id="m-p1rat" min="1" max="10" placeholder="1-10">
+      </div>
+      <div class="fg" style="max-width:90px;">
+        <label>Player 2 rating</label>
+        <input class="fc" type="number" id="m-p2rat" min="1" max="10" placeholder="1-10">
+      </div>
+      <div class="fg"><label>Notes</label><input class="fc" type="text" id="m-notes-in" placeholder="Optional..."></div>
+    </div>
+    <button class="btn btn-gold btn-sm" onclick="logModal()">Log Play</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="update-banner" id="update-banner" role="status" aria-live="polite" aria-hidden="true">
+  <div class="update-banner-inner">
+    <div class="update-banner-copy">
+      <div class="update-banner-title">Update Ready</div>
+      <div class="update-banner-text">A newer version of Game Vault is ready. Refresh to load the latest app.</div>
+    </div>
+    <div class="update-banner-actions">
+      <button class="btn btn-gold btn-sm" id="update-banner-refresh" type="button">Refresh</button>
+      <button class="btn btn-sm update-dismiss" id="update-banner-dismiss" type="button" aria-label="Dismiss update notice">×</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// SAMPLE DATA (demo mode)
+// Shown until a sheet is connected. Made-up plays and ratings; cover art and scores are public BoardGameGeek data.
+// ═══════════════════════════════════════
+const SAMPLE_GAMES = [
+  {"n":"7 Wonders Duel","s":"2-Player","pl":"2","plBGG":"2","ba":"2","so":"No","bg":8.1,"cat":"Card Drafting, Civilization","played":true,"p1Rat":"8","p2Rat":"9","exp":false,"year":"2023","excluded":false,"notes":"","price":28,"bggId":"173346","image":"https://cf.geekdo-images.com/zdagMskTF7wJBPjX74XsRw__original/img/Ju836WNSaW7Mab9Vjq2TJ_FqhWQ=/0x0/filters:format(jpeg)/pic2576399.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/173346"},
+  {"n":"Sky Team","s":"2-Player","pl":"2","plBGG":"2","ba":"2","so":"No","bg":8.2,"cat":"Cooperative, Aviation","played":true,"p1Rat":"9","p2Rat":"9","exp":false,"year":"2024","excluded":false,"notes":"","price":30,"bggId":"373106","image":"https://cf.geekdo-images.com/uXMeQzNenHb3zK7Hoa6b2w__original/img/mWOQnkpyYBorh_Y1-0Y2o-ew17k=/0x0/filters:format(jpeg)/pic7398904.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/373106"},
+  {"n":"Lost Cities","s":"2-Player","pl":"2","plBGG":"2","ba":"2","so":"No","bg":7.3,"cat":"Card Game, Adventure","played":true,"p1Rat":"7","p2Rat":"6","exp":false,"year":"2021","excluded":false,"notes":"","price":20,"bggId":"50","image":"https://cf.geekdo-images.com/AL5D-dXabY-Lk3PqIFk_0g__original/img/PdGBQ7xc0GA9ndKnnInx_sQwvl4=/0x0/filters:format(jpeg)/pic4597095.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/50"},
+  {"n":"Azul","s":"Family","pl":"2–4","plBGG":"2-4","ba":"2","so":"No","bg":7.8,"cat":"Abstract Strategy, Tile Placement","played":true,"p1Rat":"8","p2Rat":"8","exp":false,"year":"2022","excluded":false,"notes":"","price":32,"bggId":"230802","image":"https://cf.geekdo-images.com/aPSHJO0d0XOpQR5X-wJonw__original/img/AkbtYVc6xXJF3c9EUrakklcclKw=/0x0/filters:format(png)/pic6973671.png","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/230802"},
+  {"n":"Cascadia","s":"Family","pl":"1–4","plBGG":"1-4","ba":"2–3","so":"Yes","bg":7.9,"cat":"Tile Placement, Nature","played":true,"p1Rat":"9","p2Rat":"8","exp":false,"year":"2024","excluded":false,"notes":"","price":36,"bggId":"295947","image":"https://cf.geekdo-images.com/MjeJZfulbsM1DSV3DrGJYA__original/img/B374C04Eip7fmQBGJzgiOTp-jyQ=/0x0/filters:format(jpeg)/pic5100691.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/295947"},
+  {"n":"Catan","s":"Family","pl":"3–4","plBGG":"3-4","ba":"4","so":"No","bg":7.1,"cat":"Negotiation, Network Building","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2020","excluded":false,"notes":"","price":42,"bggId":"13","image":"https://cf.geekdo-images.com/0XODRpReiZBFUffEcqT5-Q__original/img/oRc0AomWA9ZtFqQDZiZbIyKE1j0=/0x0/filters:format(png)/pic9156909.png","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/13"},
+  {"n":"Carcassonne","s":"Family","pl":"2–5","plBGG":"2-5","ba":"2","so":"No","bg":7.4,"cat":"Tile Placement","played":true,"p1Rat":"7","p2Rat":"8","exp":false,"year":"2019","excluded":false,"notes":"","price":30,"bggId":"822","image":"https://cf.geekdo-images.com/peUgu3A20LRmAXAMyDQfpQ__original/img/bP18m_PYjyFOv1IBGgMOteQUneA=/0x0/filters:format(jpeg)/pic8621446.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/822"},
+  {"n":"Ticket to Ride","s":"Family","pl":"2–5","plBGG":"2-5","ba":"4","so":"No","bg":7.4,"cat":"Route Building, Set Collection","played":true,"p1Rat":"7","p2Rat":"7","exp":false,"year":"2019","excluded":false,"notes":"","price":45,"bggId":"9209","image":"https://cf.geekdo-images.com/kdWYkW-7AqG63HhqPL6ekA__original/img/rWF8r4JXXCQQ7QhiWHhmT-rQ3Pc=/0x0/filters:format(jpeg)/pic8937637.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/9209"},
+  {"n":"Splendor","s":"Family","pl":"2–4","plBGG":"2-4","ba":"3","so":"No","bg":7.4,"cat":"Engine Building, Set Collection","played":true,"p1Rat":"7","p2Rat":"8","exp":false,"year":"2021","excluded":false,"notes":"","price":31,"bggId":"148228","image":"https://cf.geekdo-images.com/vNFe4JkhKAERzi4T0Ntwpw__original/img/rqcUdtu_N4v-SpI96XVmpYHnJww=/0x0/filters:format(png)/pic8234167.png","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/148228"},
+  {"n":"Kingdomino","s":"Family","pl":"2–4","plBGG":"2-4","ba":"2","so":"No","bg":7.3,"cat":"Tile Placement","played":true,"p1Rat":"6","p2Rat":"7","exp":false,"year":"2022","excluded":false,"notes":"","price":18,"bggId":"204583","image":"https://cf.geekdo-images.com/c0m3gwZTcfKoLI63ASio8g__original/img/HT6NQPT0cSFcZXjSewtjTO_NBAE=/0x0/filters:format(png)/pic8443569.png","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/204583"},
+  {"n":"Sushi Go!","s":"Family","pl":"2–5","plBGG":"3-5","ba":"4","so":"No","bg":7.0,"cat":"Card Drafting, Set Collection","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2023","excluded":false,"notes":"","price":12,"bggId":"133473","image":"https://cf.geekdo-images.com/Fn3PSPZVxa3YurlorITQ1Q__original/img/5vRsn2TT9eJmq27i9HtLWKpB_xs=/0x0/filters:format(jpeg)/pic1900075.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/133473"},
+  {"n":"Forbidden Island","s":"Family","pl":"2–4","plBGG":"2-4","ba":"4","so":"No","bg":6.8,"cat":"Cooperative, Adventure","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2020","excluded":false,"notes":"","price":18,"bggId":"65244","image":"https://cf.geekdo-images.com/JgAkEBUaiHOsOS94iRMs2w__original/img/H5d4I5z_HSpPEu7EAl0DqLt9_pM=/0x0/filters:format(jpeg)/pic646458.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/65244"},
+  {"n":"The Crew: Mission Deep Sea","s":"Family","pl":"2–5","plBGG":"3-5","ba":"4","so":"No","bg":8.2,"cat":"Cooperative, Trick-taking","played":true,"p1Rat":"8","p2Rat":"9","exp":false,"year":"2025","excluded":false,"notes":"","price":15,"bggId":"324856","image":"https://cf.geekdo-images.com/VuBqZ1sMaDAVVHF_OEJP4g__original/img/jGWxczXC_VWZofeAmlO_DkB0hCI=/0x0/filters:format(jpeg)/pic5988903.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/324856"},
+  {"n":"7 Wonders","s":"Adult","pl":"2–7","plBGG":"3-7","ba":"4–5","so":"No","bg":7.7,"cat":"Card Drafting, Civilization","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2021","excluded":false,"notes":"","price":45,"bggId":"68448","image":"https://cf.geekdo-images.com/35h9Za_JvMMMtx_92kT0Jg__original/img/jt70jJDZ1y1FWJs4ZQf5FI8APVY=/0x0/filters:format(jpeg)/pic7149798.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/68448"},
+  {"n":"Dominion","s":"Adult","pl":"2–4","plBGG":"2-4","ba":"3","so":"No","bg":7.6,"cat":"Deck-Building","played":true,"p1Rat":"8","p2Rat":"6","exp":false,"year":"2018","excluded":false,"notes":"","price":40,"bggId":"36218","image":"https://cf.geekdo-images.com/j6iQpZ4XkemZP07HNCODBA__original/img/96COuakNiLRrjDLc1sM4Zxsw4WE=/0x0/filters:format(jpeg)/pic394356.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/36218"},
+  {"n":"Dune: Imperium","s":"Adult","pl":"1–4","plBGG":"1-4","ba":"3–4","so":"Yes","bg":8.4,"cat":"Deck-Building, Worker Placement","played":true,"p1Rat":"9","p2Rat":"7","exp":false,"year":"2024","excluded":false,"notes":"","price":50,"bggId":"316554","image":"https://cf.geekdo-images.com/PhjygpWSo-0labGrPBMyyg__original/img/mZzaBAEEJpMlHWWmC0R6Su0OibQ=/0x0/filters:format(jpeg)/pic5666597.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/316554"},
+  {"n":"Lost Ruins of Arnak","s":"Adult","pl":"1–4","plBGG":"1-4","ba":"3","so":"Yes","bg":8.1,"cat":"Deck-Building, Worker Placement","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2025","excluded":false,"notes":"","price":55,"bggId":"312484","image":"https://cf.geekdo-images.com/6GqH14TJJhza86BX5HCLEQ__original/img/CXqwimJPonWy1oyXEMgPN_ZVmUI=/0x0/filters:format(jpeg)/pic5674958.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/312484"},
+  {"n":"Arcs","s":"Adult","pl":"2–4","plBGG":"2-4","ba":"3–4","so":"No","bg":8.1,"cat":"Strategy, Science Fiction","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2025","excluded":false,"notes":"","price":60,"bggId":"359871","image":"https://cf.geekdo-images.com/XWImAu_3RK61wbzcKboVdA__original/img/43ianMZOks7UHlZILx0VBRntOmM=/0x0/filters:format(png)/pic8145530.png","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/359871"},
+  {"n":"Risk","s":"Adult","pl":"2–6","plBGG":"3-6","ba":"4","so":"No","bg":5.6,"cat":"Area Control, Wargame","played":true,"p1Rat":"4","p2Rat":"5","exp":false,"year":"2015","excluded":false,"notes":"","price":25,"bggId":"181","image":"https://cf.geekdo-images.com/Oem1TTtSgxOghRFCoyWRPw__original/img/Nu3eXPyOkhtnR3hhpUrtgqRMAfs=/0x0/filters:format(jpeg)/pic4916782.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/181"},
+  {"n":"Love Letter","s":"Party","pl":"2–6","plBGG":"3-6","ba":"4","so":"No","bg":7.2,"cat":"Card Game, Deduction","played":true,"p1Rat":"7","p2Rat":"8","exp":false,"year":"2020","excluded":false,"notes":"","price":12,"bggId":"129622","image":"https://cf.geekdo-images.com/T1ltXwapFUtghS9A7_tf4g__original/img/xIAzJY7rl-mtPStRZSqnTVsAr8Y=/0x0/filters:format(jpeg)/pic1401448.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/129622"},
+  {"n":"Exploding Kittens","s":"Party","pl":"2–5","plBGG":"3-5","ba":"4","so":"No","bg":6.1,"cat":"Card Game, Humor","played":true,"p1Rat":"5","p2Rat":"6","exp":false,"year":"2019","excluded":false,"notes":"","price":20,"bggId":"172225","image":"https://cf.geekdo-images.com/N8bL53-pRU7zaXDTrEaYrw__original/img/0ciN1VZYifUd0qIDO0e8cGXmiss=/0x0/filters:format(png)/pic2691976.png","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/172225"},
+  {"n":"Qwixx","s":"Party","pl":"2–5","plBGG":"2-5","ba":"3–4","so":"No","bg":6.9,"cat":"Dice Game","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2022","excluded":false,"notes":"","price":12,"bggId":"131260","image":"https://cf.geekdo-images.com/aOt-bT9nDzZdWl0dUqLy4w__original/img/BBC0kwf7JPYMxYGnsSDRaZ_BRF4=/0x0/filters:format(jpeg)/pic1950487.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/131260"},
+  {"n":"Yahtzee","s":"Kids","pl":"2–10","plBGG":"2-8","ba":"4","so":"No","bg":5.4,"cat":"Dice Game, Classic","played":true,"p1Rat":"4","p2Rat":"5","exp":false,"year":"2016","excluded":false,"notes":"","price":10,"bggId":"2243","image":"https://cf.geekdo-images.com/dp-pJkUemCjhrwi9QItrPA__original/img/eeYPdva8ti4Hi2PYxkTLRPrtfKk=/0x0/filters:format(jpeg)/pic378237.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/2243"},
+  {"n":"Under Falling Skies","s":"Solo","pl":"1","plBGG":"1","ba":"1","so":"Yes","bg":7.8,"cat":"Solo, Dice Placement, Science Fiction","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2024","excluded":false,"notes":"","price":29,"bggId":"306735","image":"https://cf.geekdo-images.com/ecO5eAd3RkctQ0-Tbqv37Q__original/img/eVUBGX1Hjp91YAlj3XJtRQ3y444=/0x0/filters:format(jpeg)/pic5428723.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/306735"},
+  {"n":"Marvel Champions: The Card Game","s":"Solo","pl":"1–4","plBGG":"1-4","ba":"2","so":"Yes","bg":8.1,"cat":"Cooperative, Card Game","played":false,"p1Rat":"","p2Rat":"","exp":false,"year":"2025","excluded":false,"notes":"","price":60,"bggId":"285774","image":"https://cf.geekdo-images.com/kRvUgYiaOq07kC67ZK5UoQ__original/img/cqng0e4S7Cj6j6Sb49-OCggGi-8=/0x0/filters:format(jpeg)/pic4900321.jpg","thumb":"","bggUrl":"https://boardgamegeek.com/boardgame/285774"}
+];
+const SAMPLE_PLAYS = [
+  {"id":"demo-1","date":"2026-06-06","game":"Azul","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-2","date":"2026-06-14","game":"7 Wonders Duel","winner":"Player 2","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-3","date":"2026-06-21","game":"Splendor","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-4","date":"2026-07-03","game":"Sky Team","winner":"N/A (Coop)","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-5","date":"2026-07-11","game":"Carcassonne","winner":"Player 2","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-6","date":"2026-07-19","game":"Dominion","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-7","date":"2026-08-02","game":"Lost Cities","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-8","date":"2026-08-15","game":"Ticket to Ride","winner":"Player 2","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-9","date":"2026-08-29","game":"Cascadia","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-10","date":"2026-09-12","game":"Kingdomino","winner":"Player 2","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-11","date":"2026-09-27","game":"Dune: Imperium","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-12","date":"2026-10-04","game":"The Crew: Mission Deep Sea","winner":"N/A (Coop)","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-13","date":"2026-10-18","game":"Love Letter","winner":"Player 2","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-14","date":"2026-10-25","game":"7 Wonders Duel","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-15","date":"2026-11-01","game":"Azul","winner":"Player 1","notes":"","p1Rat":"","p2Rat":""},
+  {"id":"demo-16","date":"2026-11-07","game":"Splendor","winner":"Player 2","notes":"","p1Rat":"","p2Rat":""}
+];
+const SAMPLE_PLAYERS = {
+  p1: {name:'Alex', dino:'velociraptor', color:'#36b8c4'},
+  p2: {name:'Sam', dino:'triceratops', color:'#e9513d'}
+};
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let cfg = JSON.parse(localStorage.getItem('gvc-cfg')||'{}');
+// Demo mode: no sheet connected. The app runs on the sample data above and nothing is saved.
+const isDemo = () => !cfg.scriptUrl;
+const readStored = (key) => { try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; } catch (error) { return []; } };
+// When connected, the last synced copy is kept in this browser so the app opens instantly and works offline.
+let GAMES = isDemo() ? SAMPLE_GAMES.map(g=>({...g})) : readStored('gvc-games');
+let plays = isDemo() ? SAMPLE_PLAYS.map(p=>({...p})) : readStored('gvc-plays');
+if (isDemo()) cfg.invested = SAMPLE_GAMES.reduce((sum,g)=>sum+(g.price||0),0).toLocaleString('en-US');
+let filters = {shelf:[],status:null,baseOnly:false};
+let picks = {shelf:[],played:null,exp:'no',coop:null,players:null};
+let activeModal = null;
+const UI_ICON_SPRITE = 'assets/ui-icons.svg';
+const DINO_ROSTER = {
+  velociraptor: {label:'Velociraptor', asset:'assets/dinos/velociraptor.png', accent:'#36b8c4'},
+  triceratops: {label:'Triceratops', asset:'assets/dinos/triceratops.png', accent:'#e9513d'},
+  trex: {label:'T-Rex', asset:'assets/dinos/trex.png', accent:'#79b82a'},
+  ankylosaurus: {label:'Ankylosaurus', asset:'assets/dinos/ankylosaurus.png', accent:'#5d79a9'},
+  brachiosaurus: {label:'Brachiosaurus', asset:'assets/dinos/brachiosaurus.png', accent:'#c6a64b'},
+  pterodactyl: {label:'Pterodactyl', asset:'assets/dinos/pterodactyl.png', accent:'#76b6d6'},
+  spinosaurus: {label:'Spinosaurus', asset:'assets/dinos/spinosaurus.png', accent:'#d65f78'},
+  stegosaurus: {label:'Stegosaurus', asset:'assets/dinos/stegosaurus.png', accent:'#8b67ad'}
+};
+const PLAYER_COLOR_PALETTE = {
+  cyan:'#36b8c4',
+  gold:'#d5ad52',
+  pink:'#df6596',
+  purple:'#8b67ad',
+  lime:'#8fcf37',
+  orange:'#ed7a32',
+  teal:'#2aa197',
+  red:'#e9513d'
+};
+const DEFAULT_PLAYER_PROFILES = {
+  p1: {name:'Player 1', dino:'velociraptor', color:'#36b8c4'},
+  p2: {name:'Player 2', dino:'triceratops', color:'#e9513d'}
+};
+let playerProfiles = normalizePlayerProfiles(isDemo() ? SAMPLE_PLAYERS : cfg.playerProfiles);
+// Global filters (set in Sync tab, applied everywhere)
+let globalFilters = JSON.parse(localStorage.getItem('gvc-global-filters') || '{"kids":"1","year":""}');
+if (typeof globalFilters !== 'object' || globalFilters === null) globalFilters = {kids:'1', year:''};
+globalFilters.kids = globalFilters.kids ?? '1';
+globalFilters.year = globalFilters.year ?? '';
+let twoPlayerMode = 'good'; // 'best' = Best At contains 2, 'good' = BGG Comm contains 2 or 1-
+let twoPlayerExcludedShelves = new Set([]);
+let twoPlayerExcludedGames = new Set(JSON.parse(localStorage.getItem('gvc-2p-excl') || '[]'));
+
+function save2pExclusions() {
+  if (isDemo()) return;
+  localStorage.setItem('gvc-2p-excl', JSON.stringify([...twoPlayerExcludedGames]));
+}
+
+function toggle2pShelfExclude(shelf, btn) {
+  if (twoPlayerExcludedShelves.has(shelf)) {
+    twoPlayerExcludedShelves.delete(shelf);
+    btn.classList.remove('active');
+  } else {
+    twoPlayerExcludedShelves.add(shelf);
+    btn.classList.add('active');
+  }
+  renderTwoPlayer();
+}
+
+function set2pMode(mode, btn) {
+  twoPlayerMode = mode;
+  document.querySelectorAll('[id^="2p-mode-"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTwoPlayer();
+}
+
+function excludeGame(name) {
+  twoPlayerExcludedGames.add(name);
+  const game = GAMES.find(g=>g.n===name);
+  if(game) game.excluded = true;
+  save2pExclusions();
+  // Also update sheet if Apps Script is connected
+  if (!isDemo()) pushExclusion(name, true);
+  renderTwoPlayer();
+}
+
+function includeGame(name) {
+  twoPlayerExcludedGames.delete(name);
+  const game = GAMES.find(g=>g.n===name);
+  if(game) game.excluded = false;
+  // Also clear sheet flag if Apps Script is connected
+  if (!isDemo()) pushExclusion(name, false);
+  // If the game has g.excluded=true from sheet, sync will clear it on next sync
+  save2pExclusions();
+  renderTwoPlayer();
+}
+
+async function pushExclusion(name, excluded) {
+  if (!cfg.scriptUrl) return;
+  try {
+    await fetch(cfg.scriptUrl, {
+      method: 'POST',
+      body: JSON.stringify({action: 'exclude', game: name, excluded: excluded})
+    });
+  } catch(e) {}
+}
+
+function toggleExcluded() {
+  const wrap = document.getElementById('excluded-wrap');
+  const arrow = document.getElementById('excl-arrow');
+  const willOpen = wrap.style.display === 'none';
+  wrap.style.display = willOpen ? 'block' : 'none';
+  arrow.textContent = willOpen ? '▾' : '▸';
+  document.querySelector('.excluded-toggle')?.setAttribute('aria-expanded', String(willOpen));
+}
+
+function applyGlobalFilters() {
+  globalFilters.kids   = document.getElementById('gf-kids')?.value || '1';
+  globalFilters.year   = document.getElementById('gf-year')?.value || '';
+  saveGlobalFilters();
+  syncKidsFilterButtons();
+  const active = globalFilters.kids === '0' || globalFilters.year;
+  const msg = document.getElementById('gf-active-msg');
+  if (msg) msg.style.display = active ? 'block' : 'none';
+  updateInvestedCard();
+  renderCollection(); renderStats(); renderTwoPlayer();
+  if(document.getElementById('tab-plays').classList.contains('active')) renderPlays();
+}
+
+// Collection filter for kids' games. Shares state with the Settings default so both stay in step.
+function setKidsFilter(value) {
+  const select = document.getElementById('gf-kids');
+  if (select) select.value = value;
+  applyGlobalFilters();
+}
+
+function syncKidsFilterButtons() {
+  const hidden = globalFilters.kids === '0';
+  document.getElementById('kids-filter-hide')?.classList.toggle('active', hidden);
+  document.getElementById('kids-filter-show')?.classList.toggle('active', !hidden);
+}
+
+function passesGlobal(g) {
+  if (globalFilters.kids === '0' && hasShelfValue(g.s, 'Kids')) return false;
+  if (globalFilters.year && g.year !== globalFilters.year) return false;
+  return true;
+}
+
+function updateInvestedCard() {
+  const el = document.getElementById('stat-invested');
+  if (!el) return;
+  el.textContent = '$' + (cfg.invested || '…');
+}
+
+function populateYearFilter() {
+  const sel = document.getElementById('gf-year');
+  if (!sel) return;
+  const years = [...new Set(GAMES.map(g=>g.year).filter(y=>y))].sort();
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All years</option>' +
+    years.map(y => `<option value="${y}"${cur===y?' selected':''}>${y}</option>`).join('');
+  sel.value=cur;
+}
+
+function isCoop(g) {
+  const cat = (g.cat||'').toLowerCase();
+  return cat.includes('cooperative') || cat.includes('co-op') || cat.includes('coop');
+}
+
+// Check if a game supports exactly N players based on Players (BGG Comm) field
+// Handles: "2", "2-4", "1-4,6", "2,4", "2-3+", "2-4, Best: 3" etc.
+function supportsPlayerCount(g, n) {
+  const raw = (g.plBGG||g.pl||'').toString().replace(/best:.*/i,'').trim();
+  if (!raw) return true; // unknown = include
+  const num = parseInt(n);
+  // Split on commas to handle "1-4,6"
+  const parts = raw.split(',');
+  for (const part of parts) {
+    const p = part.trim().replace('+',''); // handle "2-3+"
+    if (p.includes('-')) {
+      const [lo, hi] = p.split('-').map(x => parseInt(x.trim()));
+      if (!isNaN(lo) && !isNaN(hi) && num >= lo && num <= hi) return true;
+      if (!isNaN(lo) && isNaN(hi) && num >= lo) return true;
+    } else {
+      if (parseInt(p) === num) return true;
+    }
+  }
+  return false;
+}
+
+function savePlays(){ if(!isDemo()) localStorage.setItem('gvc-plays',JSON.stringify(plays)); }
+function saveCfg(){ if(!isDemo()) localStorage.setItem('gvc-cfg',JSON.stringify(cfg)); }
+function saveGlobalFilters(){localStorage.setItem('gvc-global-filters', JSON.stringify(globalFilters));}
+
+function iconUse(name, className='ui-icon'){
+  return `<svg class="${className}" aria-hidden="true"><use href="${UI_ICON_SPRITE}#${name}"></use></svg>`;
+}
+
+function normalizeDinoKey(value, fallback){
+  const key = String(value || '').toLowerCase().replace(/[^a-z]/g,'');
+  if(key.includes('trex') || key.includes('tyrannosaurus')) return 'trex';
+  const match = Object.keys(DINO_ROSTER).find(name => key.includes(name));
+  return match || fallback;
+}
+
+function normalizeProfileColor(value, fallback){
+  const color = String(value || '').trim();
+  const namedColor = PLAYER_COLOR_PALETTE[color.toLowerCase()];
+  if(namedColor) return namedColor;
+  return /^#[0-9a-f]{6}$/i.test(color) ? color : fallback;
+}
+
+function normalizePlayerProfiles(profiles){
+  const source = profiles && typeof profiles === 'object' ? profiles : {};
+  return {
+    p1: {
+      name: String(source.p1?.name || DEFAULT_PLAYER_PROFILES.p1.name),
+      dino: normalizeDinoKey(source.p1?.dino, DEFAULT_PLAYER_PROFILES.p1.dino),
+      color: normalizeProfileColor(source.p1?.color, DEFAULT_PLAYER_PROFILES.p1.color)
+    },
+    p2: {
+      name: String(source.p2?.name || DEFAULT_PLAYER_PROFILES.p2.name),
+      dino: normalizeDinoKey(source.p2?.dino, DEFAULT_PLAYER_PROFILES.p2.dino),
+      color: normalizeProfileColor(source.p2?.color, DEFAULT_PLAYER_PROFILES.p2.color)
+    }
+  };
+}
+
+function renderBattleRosterSettings(){
+  const container=document.getElementById('roster-preview');
+  if(!container) return;
+  container.innerHTML=['p1','p2'].map(key=>{
+    const profile=playerProfiles[key];
+    const fallback=key==='p1'?'velociraptor':'triceratops';
+    const dino=DINO_ROSTER[profile.dino]||DINO_ROSTER[fallback];
+    return `<div class="roster-player" style="--roster-accent:${escAttr(profile.color)}">
+      <div class="roster-avatar">
+        <img src="${dino.asset}" alt="">
+      </div>
+      <div><strong>${escAttr(profile.name)}</strong><span>${dino.label}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function playerSlotFromWinner(value){
+  const normalized=String(value||'').trim().toLowerCase();
+  if(!normalized) return '';
+  const compact=normalized.replace(/[^a-z0-9]/g,'');
+  const p1Name=playerProfiles.p1.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const p2Name=playerProfiles.p2.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(['1','p1','player1'].includes(compact)||compact===p1Name) return 'p1';
+  if(['2','p2','player2'].includes(compact)||compact===p2Name) return 'p2';
+  return '';
+}
+
+function winnerDisplayName(value){
+  const slot=playerSlotFromWinner(value);
+  if(slot) return playerProfiles[slot].name;
+  return String(value||'');
+}
+
+function winnerColor(value){
+  const slot=playerSlotFromWinner(value);
+  return slot ? playerProfiles[slot].color : 'var(--brass)';
+}
+
+function updatePlayerLabels(){
+  const p1=playerProfiles.p1.name;
+  const p2=playerProfiles.p2.name;
+  document.querySelectorAll('#log-winner option[value="Player 1"],#m-winner option[value="Player 1"]').forEach(option=>{option.textContent=p1;});
+  document.querySelectorAll('#log-winner option[value="Player 2"],#m-winner option[value="Player 2"]').forEach(option=>{option.textContent=p2;});
+  const labels=[
+    ['log-p1rat',`${p1} rating (1-10)`],
+    ['log-p2rat',`${p2} rating (1-10)`],
+    ['m-rate-p1',`${p1} rating`],
+    ['m-rate-p2',`${p2} rating`],
+    ['m-p1rat',`${p1} rating`],
+    ['m-p2rat',`${p2} rating`]
+  ];
+  labels.forEach(([id,text])=>{
+    const label=document.getElementById(id)?.closest('.fg')?.querySelector('label');
+    if(label) label.textContent=text;
+  });
+  const p1Head=document.getElementById('stats-player-one-head');
+  const p2Head=document.getElementById('stats-player-two-head');
+  if(p1Head) p1Head.textContent=`${p1} W`;
+  if(p2Head) p2Head.textContent=`${p2} W`;
+}
+
+// ═══════════════════════════════════════
+// SHELF BADGE CLASS
+// ═══════════════════════════════════════
+function normalizeShelfValue(shelfValue){
+  return String(shelfValue || '').replace(/\s+/g,' ').trim();
+}
+
+function splitShelfValues(shelfValue){
+  return String(shelfValue || '')
+    .split(/[;,/]|\s+&\s+|\s+and\s+|\s+\+\s+/gi)
+    .map(s => normalizeShelfValue(s))
+    .filter(Boolean);
+}
+
+function shelfMatchesValue(shelfValue, targetShelf){
+  const target = normalizeShelfValue(targetShelf).toLowerCase();
+  if(!target) return false;
+  return splitShelfValues(shelfValue).some(s => s.toLowerCase() === target);
+}
+
+function hasShelfValue(shelfValue, targetShelf){
+  const raw = normalizeShelfValue(shelfValue).toLowerCase();
+  const target = normalizeShelfValue(targetShelf).toLowerCase();
+  if(!target) return false;
+  if(raw === target) return true;
+  return splitShelfValues(shelfValue).some(s => s.toLowerCase() === target);
+}
+
+function sBadge(shelf){
+  const shelves = splitShelfValues(shelf).map(s => s.toLowerCase());
+  if(shelves.some(s => s.includes('2-player'))) return 's2p';
+  if(shelves.some(s => s.includes('adult'))) return 'sad';
+  if(shelves.some(s => s.includes('family'))) return 'sfam';
+  if(shelves.some(s => s.includes('kids'))) return 'skid';
+  if(shelves.some(s => s.includes('solo'))) return 'ssol';
+  if(shelves.some(s => s.includes('party'))) return 'spar';
+  return 'sgen';
+}
+
+const shelfOrder = ['2-Player','Adult','Family','Party','Kids','Solo'];
+
+function getAvailableShelves(){
+  const seen = new Set();
+  const shelfSource = globalFilters.kids === '0'
+    ? GAMES.filter(g => !hasShelfValue(g.s, 'Kids'))
+    : GAMES;
+  const raw = shelfSource.flatMap(g => splitShelfValues(g.s));
+  const ordered = [];
+  shelfOrder.forEach(name => {
+    const match = raw.find(s => s.toLowerCase() === name.toLowerCase());
+    if(match && !seen.has(name.toLowerCase())){
+      seen.add(name.toLowerCase());
+      ordered.push(match);
+    }
+  });
+  raw.sort((a,b)=>a.localeCompare(b)).forEach(name => {
+    const normalized = normalizeShelfValue(name);
+    const key = normalized.toLowerCase();
+    if(!seen.has(key)){
+      seen.add(key);
+      ordered.push(normalized);
+    }
+  });
+  return ordered;
+}
+
+function normalizeShelfSelections(){
+  const shelves = getAvailableShelves();
+  const allowed = new Set(shelves.map(s => s.toLowerCase()));
+  filters.shelf = filters.shelf.filter(s => allowed.has(s.toLowerCase()));
+  picks.shelf = (Array.isArray(picks.shelf) ? picks.shelf : [])
+    .filter(s => allowed.has(String(s).toLowerCase()));
+}
+
+function renderShelfControls(){
+  const shelves = getAvailableShelves();
+  const collectionGroup = document.getElementById('collection-shelf-group');
+  if(collectionGroup){
+    collectionGroup.innerHTML = `<span class="fgrp-lbl">Shelf</span>
+      <button class="fbtn filter-all ${filters.shelf.length===0?'active':''}" onclick="selectAllShelves()"><span>All games</span></button>
+      ${shelves.map(shelf => `<button class="fbtn ${filters.shelf.some(sel => sel.toLowerCase() === shelf.toLowerCase())?'active':''}" data-shelf="${escAttr(shelf)}" onclick="handleShelfFilterClick(this)"><span>${shelf}</span></button>`).join('')}`;
+  }
+  const pickerGroup = document.getElementById('picker-shelf-group');
+  if(pickerGroup){
+    pickerGroup.innerHTML = `<span class="fgrp-lbl" style="align-self:center;">Shelf</span>
+      ${shelves.map(shelf => `<button class="fbtn ${picks.shelf.some(sel => sel.toLowerCase() === shelf.toLowerCase())?'active':''}" data-shelf="${escAttr(shelf)}" onclick="handlePickShelfClick(this)"><span>${shelf}</span></button>`).join('')}`;
+  }
+}
+
+function shelfIconName(shelf){
+  const key = String(shelf || '').toLowerCase();
+  if(key.includes('2-player')) return 'users';
+  if(key.includes('family')) return 'home';
+  if(key.includes('party')) return 'party';
+  if(key.includes('kids')) return 'kids';
+  if(key.includes('solo')) return 'solo';
+  return 'grid';
+}
+
+function handleShelfFilterClick(btn){
+  setFilter('shelf', btn.dataset.shelf || '', btn);
+}
+
+function selectAllShelves(){
+  filters.shelf = [];
+  renderCollection();
+}
+
+function handlePickShelfClick(btn){
+  setPick('shelf', btn.dataset.shelf || '', btn);
+}
+
+function escAttr(value){
+  return String(value || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+document.querySelectorAll('.nav-tab').forEach(t=>{
+  t.addEventListener('click',function(){
+    const id = this.dataset.tab;
+    document.querySelectorAll('.nav-tab').forEach(x=>{
+      x.classList.remove('active');
+      x.setAttribute('aria-selected','false');
+    });
+    document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    this.setAttribute('aria-selected','true');
+    document.getElementById('tab-'+id).classList.add('active');
+    if(id==='plays') renderPlays();
+    if(id==='stats') renderStats();
+    if(id==='collection') renderCollection();
+  });
+});
+
+// ═══════════════════════════════════════
+// FILTERS
+// ═══════════════════════════════════════
+function setFilter(k,v,btn){
+  if(k!=='shelf'){
+    filters[k]=v;
+    btn.parentElement.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCollection();
+    return;
+  }
+
+  const shelves = getAvailableShelves();
+  const key = v.toLowerCase();
+  const selected = new Set(filters.shelf.map(shelf => shelf.toLowerCase()));
+
+  if(selected.has(key)){
+    filters.shelf = filters.shelf.filter(shelf => shelf.toLowerCase() !== key);
+  } else {
+    const canonical = shelves.find(shelf => shelf.toLowerCase() === key) || v;
+    filters.shelf = [...filters.shelf, canonical];
+  }
+
+  renderCollection();
+}
+
+function setBaseOnly(baseOnly){
+  filters.baseOnly = baseOnly;
+  document.getElementById('type-filter-all')?.classList.toggle('active', !baseOnly);
+  document.getElementById('type-filter-base')?.classList.toggle('active', baseOnly);
+  renderCollection();
+}
+
+function setPick(k,v,btn){
+  if(k==='shelf'){
+    const key = String(v || '').toLowerCase();
+    const shelves = getAvailableShelves();
+    const selected = new Set((Array.isArray(picks.shelf) ? picks.shelf : []).map(shelf => shelf.toLowerCase()));
+    if(selected.has(key)){
+      picks.shelf = picks.shelf.filter(shelf => shelf.toLowerCase() !== key);
+    } else {
+      const canonical = shelves.find(shelf => shelf.toLowerCase() === key) || v;
+      picks.shelf = [...picks.shelf, canonical];
+    }
+    renderShelfControls();
+    return;
+  }
+
+  picks[k]=v;
+  btn.parentElement.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// COLLECTION
+// ═══════════════════════════════════════
+function getFiltered(){
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  return GAMES.filter(g=>{
+    if(!passesGlobal(g)) return false;
+    if(q && !g.n.toLowerCase().includes(q) && !g.cat.toLowerCase().includes(q)) return false;
+    if(filters.shelf.length && !filters.shelf.some(shelf => hasShelfValue(g.s, shelf))) return false;
+    if(filters.status==='played' && !g.played) return false;
+    if(filters.status==='unplayed' && g.played) return false;
+    if(filters.baseOnly && g.exp) return false;
+    return true;
+  });
+}
+
+function numericRating(value){
+  const rating = parseFloat(value);
+  return Number.isFinite(rating) ? rating : null;
+}
+
+function renderRatingBadges(game){
+  const p1Rating = numericRating(game.p1Rat);
+  const p2Rating = numericRating(game.p2Rat);
+  if(p1Rating === null && p2Rating === null) return '';
+  return `<div class="rating-strip">
+    ${p1Rating !== null ? `<span class="rating-chip p1"><span>${escAttr(playerProfiles.p1.name)}</span><strong>${p1Rating}</strong></span>` : ''}
+    ${p2Rating !== null ? `<span class="rating-chip p2"><span>${escAttr(playerProfiles.p2.name)}</span><strong>${p2Rating}</strong></span>` : ''}
+  </div>`;
+}
+
+function getGameCover(game){
+  const nameKey = String(game?.n || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const highRes = game?.image
+    || (game?.bggId && window.BGG_IMAGE_MAP ? window.BGG_IMAGE_MAP[game.bggId] : '')
+    || (window.BGG_IMAGE_NAME_MAP ? window.BGG_IMAGE_NAME_MAP[nameKey] : '');
+  return {src: highRes || game?.thumb || '', fallback: highRes ? game?.thumb || '' : ''};
+}
+
+function styleCoverPresentation(img){
+  if(!img?.naturalWidth || !img?.naturalHeight) return;
+  const frame=img.closest('.game-cover,.pick-cover,.modal-cover');
+  if(!frame) return;
+  const ratio=img.naturalWidth/img.naturalHeight;
+  frame.classList.remove('cover-landscape','cover-square','cover-portrait','pick-empty');
+  frame.classList.add(ratio>1.18?'cover-landscape':ratio>.84?'cover-square':'cover-portrait');
+  const source=img.currentSrc||img.src;
+  const cssUrl=String(source).replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+  frame.style.backgroundImage=`linear-gradient(rgba(17,22,47,.55),rgba(17,22,47,.78)),url("${cssUrl}")`;
+}
+
+function handleCoverError(img){
+  const fallback = img.dataset.fallback;
+  if(fallback && img.src !== fallback){
+    img.dataset.fallback = '';
+    img.src = fallback;
+    return;
+  }
+  img.closest('.game-cover')?.classList.add('cover-missing');
+  img.style.display = 'none';
+}
+
+function renderCollection(){
+  normalizeShelfSelections();
+  renderShelfControls();
+  const filtered = getFiltered();
+  const gfAll = GAMES.filter(g=>passesGlobal(g));
+  const baseGames = gfAll.filter(g=>!g.exp);
+  const expansions = gfAll.filter(g=>g.exp);
+  const playedGames = gfAll.filter(g=>g.played);
+  const unplayedGames = gfAll.filter(g=>!g.played);
+  const playedPercent = gfAll.length > 0 ? Math.round(playedGames.length / gfAll.length * 100) : 0;
+  document.getElementById('col-sub').textContent = `${filtered.length} of ${gfAll.length} games`;
+  document.getElementById('col-stats').innerHTML = `
+    <div class="stat-card stat-progress">
+      <div class="stat-progress-head"><div><div class="stat-label">Collection played</div><div class="stat-num">${playedPercent}<span class="stat-suffix">%</span></div></div><span>${playedGames.length} of ${gfAll.length}</span></div>
+      <div class="collection-meter" aria-label="${playedPercent} percent of collection played"><span style="width:${playedPercent}%"></span></div>
+    </div>
+    <div class="stat-card"><div class="stat-num">${baseGames.length}</div><div class="stat-label">Base games</div></div>
+    <div class="stat-card"><div class="stat-num">${expansions.length}</div><div class="stat-label">Expansions</div></div>
+    <div class="stat-card"><div class="stat-num">${unplayedGames.length}</div><div class="stat-label">Unplayed</div></div>
+    ${cfg.role==='family'
+      ? `<div class="stat-card"><div class="stat-num">${plays.length}</div><div class="stat-label">Plays logged</div></div>`
+      : `<div class="stat-card stat-value"><div class="stat-num" id="stat-invested">${cfg.invested?'$'+cfg.invested:cfg.scriptUrl?'…':'n/a'}</div><div class="stat-label">Collection value</div></div>`}
+  `;
+
+  const grid = document.getElementById('game-grid');
+  updateInvestedCard();
+  if(!GAMES.length){grid.innerHTML='<div class="empty">Loading your collection...</div>';return;}
+  if(!filtered.length){grid.innerHTML='<div class="empty">No games match your filters.</div>';return;}
+  grid.innerHTML = filtered.map(g=>{
+    const gp = plays.filter(p=>p.game===g.n);
+    const p1W = gp.filter(p=>playerSlotFromWinner(p.winner)==='p1').length;
+    const p2W = gp.filter(p=>playerSlotFromWinner(p.winner)==='p2').length;
+    const {src:coverSrc,fallback:coverFallback} = getGameCover(g);
+    const cover = coverSrc
+      ? `${g.bggUrl ? `<a class="game-cover game-cover-link" href="${escAttr(g.bggUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" aria-label="Open ${escAttr(g.n)} on BoardGameGeek">` : `<div class="game-cover">`}<img src="${escAttr(coverSrc)}" data-fallback="${escAttr(coverFallback)}" alt="${escAttr(g.n)} cover" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="styleCoverPresentation(this)" onerror="handleCoverError(this)">${g.bggUrl ? `</a>` : `</div>`}`
+      : `<div class="game-cover game-cover-empty"><span>Cover not indexed</span></div>`;
+    return `<div class="game-card ${g.played?'played-card':''} ${g.thumb?'has-thumb':''}" data-game="${escAttr(g.n)}" role="button" tabindex="0" onclick="openModal(this.dataset.game)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(this.dataset.game)}">
+      ${cover}
+      <div class="game-card-body">
+        <div class="game-card-title-row">
+          <div class="gname">${g.n}</div>
+        </div>
+        <div class="game-card-category">${g.cat}</div>
+        <div class="game-card-metrics">
+          <span class="card-metric metric-score"><strong>BGG ${g.bg || '—'}</strong></span>
+          ${g.plBGG?`<span class="card-metric metric-players">${g.plBGG} players</span>`:''}
+          ${g.ba?`<span class="card-metric metric-best">Best at ${g.ba}</span>`:''}
+        </div>
+        <div class="game-card-footer">
+          ${renderRatingBadges(g)}
+          <div class="play-count">${gp.length?`${gp.length} play${gp.length>1?'s':''} · ${escAttr(playerProfiles.p1.name)} ${p1W} / ${escAttr(playerProfiles.p2.name)} ${p2W}`:(g.played?'Played':'Not played yet')}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function openModal(name){
+  const g = GAMES.find(x=>x.n===name); if(!g) return;
+  activeModal = name;
+  const cover = getGameCover(g);
+  document.getElementById('m-cover').innerHTML = cover.src
+    ? `<img src="${escAttr(cover.src)}" data-fallback="${escAttr(cover.fallback)}" alt="${escAttr(g.n)} cover" onload="styleCoverPresentation(this)" onerror="handleCoverError(this)">`
+    : '<span>No cover</span>';
+  document.getElementById('m-name').textContent = g.n;
+  document.getElementById('m-cat').textContent = g.cat;
+  document.getElementById('m-rate-p1').value = g.p1Rat || '';
+  document.getElementById('m-rate-p2').value = g.p2Rat || '';
+  document.getElementById('m-grid').innerHTML = `
+    <div class="mfield"><label>Shelf</label><div class="val">${g.s}</div></div>
+    <div class="mfield"><label>BGG Score</label><div class="val">${g.bg}</div></div>
+    <div class="mfield"><label>Players</label><div class="val">${g.pl}</div></div>
+    <div class="mfield"><label>Best At</label><div class="val">${g.ba}</div></div>
+    <div class="mfield"><label>Good at 2P</label><div class="val">${g.p2||'—'}</div></div>
+    <div class="mfield"><label>Solo Option</label><div class="val">${g.so||'—'}</div></div>
+    <div class="mfield"><label>${escAttr(playerProfiles.p1.name)} Rating</label><div class="val">${g.p1Rat||'—'}</div></div>
+    <div class="mfield"><label>${escAttr(playerProfiles.p2.name)} Rating</label><div class="val">${g.p2Rat||'—'}</div></div>
+    <div class="mfield"><label>Type</label><div class="val">${g.exp?'Expansion':'Base Game'}</div></div>
+  `;
+  document.getElementById('m-notes').innerHTML = g.notes?`<div class="notes-box">${g.notes}</div>`:'';
+  document.getElementById('m-date').valueAsDate = new Date();
+  refreshModalPlays(name);
+  document.getElementById('moverlay').classList.add('open');
+}
+
+function refreshModalPlays(name){
+  const gp = plays.filter(p=>p.game===name).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const p1W = gp.filter(p=>playerSlotFromWinner(p.winner)==='p1').length;
+  const p2W = gp.filter(p=>playerSlotFromWinner(p.winner)==='p2').length;
+  const ot = gp.filter(p=>!playerSlotFromWinner(p.winner)).length;
+  document.getElementById('m-wl').innerHTML = gp.length
+    ?`<div style="display:flex;gap:.75rem;flex-wrap:wrap;font-size:.8rem;margin-bottom:.3rem;">
+        <span><strong style="color:var(--text)">${gp.length}</strong> plays</span>
+        <span>${escAttr(playerProfiles.p1.name)}: <strong style="color:${escAttr(playerProfiles.p1.color)}">${p1W}W</strong></span>
+        <span>${escAttr(playerProfiles.p2.name)}: <strong style="color:${escAttr(playerProfiles.p2.color)}">${p2W}W</strong></span>
+        ${ot?`<span>Other: <strong style="color:var(--text3)">${ot}</strong></span>`:''}
+      </div>`
+    :'<div style="color:var(--text3);font-size:14px;margin-bottom:.3rem;">No plays logged yet.</div>';
+  document.getElementById('m-plays').innerHTML = gp.length
+    ? gp.map(p=>{
+        const ri = plays.indexOf(p);
+        return `<div class="pentry">
+          <span class="pdate">${p.date}</span>
+          <span class="pwinner" style="color:${winnerColor(p.winner)}">${escAttr(winnerDisplayName(p.winner))}</span>
+          ${p.p1Rat?`<span class="badge">${escAttr(playerProfiles.p1.name)}:${p.p1Rat}</span>`:''}
+          ${p.p2Rat?`<span class="badge">${escAttr(playerProfiles.p2.name)}:${p.p2Rat}</span>`:''}
+          <span class="pnotes">${p.notes||''}</span>
+          <button class="pdel" onclick="delPlay(${ri},'${name.replace(/'/g,"\\'")}')" title="Delete">✕</button>
+        </div>`;
+      }).join('')
+    :'<div class="empty" style="padding:.7rem;">No plays yet.</div>';
+}
+
+function maybeClose(e){if(e.target===document.getElementById('moverlay'))closeModal();}
+function closeModal(){document.getElementById('moverlay').classList.remove('open');activeModal=null;}
+
+// ═══════════════════════════════════════
+// PLAY LOGGING
+// ═══════════════════════════════════════
+function resolveLogGameName(value){
+  const raw=(value||'').trim();
+  if(!raw) return '';
+  const exact=GAMES.find(g=>!g.exp && g.n===raw && passesGlobal(g));
+  if(exact) return exact.n;
+  const ci=GAMES.find(g=>!g.exp && g.n.toLowerCase()===raw.toLowerCase() && passesGlobal(g));
+  if(ci) return ci.n;
+  return '';
+}
+
+function createPlayId(){
+  return globalThis.crypto?.randomUUID?.() || `play-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+async function logPlay(){
+  const game=resolveLogGameName(document.getElementById('log-game').value);
+  const date=document.getElementById('log-date').value;
+  const winner=document.getElementById('log-winner').value;
+  const notes=document.getElementById('log-notes').value;
+  if(!game||!date||!winner){showToast('Choose a game from search, plus date & winner.','#ff5c7a');return;}
+  const p1Rat = document.getElementById('log-p1rat')?.value||'';
+  const p2Rat = document.getElementById('log-p2rat')?.value||'';
+  const wasUnplayed = !GAMES.find(x=>x.n===game)?.played;
+  const p={id:createPlayId(),game,date,winner,notes,p1Rat,p2Rat};
+  plays.push(p);savePlays();markPlayed(game);updateLocalRatings(game,p1Rat,p2Rat);
+  document.getElementById('log-game').value='';
+  document.getElementById('log-winner').value='';
+  document.getElementById('log-notes').value='';
+  document.getElementById('log-p1rat').value='';
+  document.getElementById('log-p2rat').value='';
+  renderPlays();renderCollection();
+  const syncResult = await push(p, wasUnplayed);
+  showPlaySyncToast(syncResult);
+}
+
+async function logModal(){
+  if(!activeModal)return;
+  const date=document.getElementById('m-date').value;
+  const winner=document.getElementById('m-winner').value;
+  const notes=document.getElementById('m-notes-in').value;
+  if(!date||!winner){showToast('Select date & winner!','#ff5c7a');return;}
+  const p1Rat = document.getElementById('m-p1rat')?.value||'';
+  const p2Rat = document.getElementById('m-p2rat')?.value||'';
+  const wasUnplayed = !GAMES.find(x=>x.n===activeModal)?.played;
+  const p={id:createPlayId(),game:activeModal,date,winner,notes,p1Rat,p2Rat};
+  plays.push(p);savePlays();markPlayed(activeModal);updateLocalRatings(activeModal,p1Rat,p2Rat);
+  document.getElementById('m-winner').value='';
+  document.getElementById('m-notes-in').value='';
+  document.getElementById('m-p1rat').value='';
+  document.getElementById('m-p2rat').value='';
+  refreshModalPlays(activeModal);renderCollection();
+  const syncResult = await push(p, wasUnplayed);
+  showPlaySyncToast(syncResult);
+}
+
+async function saveGameRatings(){
+  if(!activeModal) return;
+  const jInput = document.getElementById('m-rate-p1');
+  const eInput = document.getElementById('m-rate-p2');
+  const button = document.getElementById('m-rate-save');
+  const p1Rat = jInput.value.trim();
+  const p2Rat = eInput.value.trim();
+  const valid = value => value === '' || (Number(value) >= 1 && Number(value) <= 10);
+
+  if(!p1Rat && !p2Rat){
+    showToast('Enter at least one rating.','#ff5c7a');
+    return;
+  }
+  if(!valid(p1Rat) || !valid(p2Rat)){
+    showToast('Ratings must be between 1 and 10.','#ff5c7a');
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'Saving...';
+  const result = await postToSheets({action:'rate',game:activeModal,p1Rat,p2Rat});
+  button.disabled = false;
+  button.textContent = 'Save Ratings';
+
+  if(!result.ok || result.data?.ratingsUpdated !== true){
+    console.error('Rating writeback failed:', result.error || result.data);
+    showToast(result.error || result.data?.message || 'Ratings were not saved to Sheets.','#ff5c7a');
+    return;
+  }
+
+  const game = GAMES.find(g => g.n === activeModal);
+  if(game){
+    if(p1Rat) game.p1Rat = p1Rat;
+    if(p2Rat) game.p2Rat = p2Rat;
+  }
+  renderCollection();
+  renderStats();
+  openModal(activeModal);
+  showToast('Ratings saved.');
+}
+
+function markPlayed(name){const g=GAMES.find(x=>x.n===name);if(g)g.played=true;}
+function updateLocalRatings(name,p1Rat,p2Rat){
+  const game=GAMES.find(x=>x.n===name);
+  if(!game) return;
+  if(p1Rat!=='') game.p1Rat=p1Rat;
+  if(p2Rat!=='') game.p2Rat=p2Rat;
+}
+
+async function delPlay(idx,name){
+  const p=plays[idx];
+  if(!p) return;
+  if(!isDemo()) showToast('Deleting from Google Sheets...');
+  const result = await pushDel(p);
+  if(!result.ok || result.data?.playDeleted !== true){
+    console.error('Play deletion failed:', result.error || result.data);
+    showToast(result.error || result.data?.message || 'Play was not deleted from Sheets.','#ff5c7a');
+    return;
+  }
+  const currentIdx=plays.indexOf(p);
+  if(currentIdx>=0) plays.splice(currentIdx,1);
+  savePlays();
+  if(name&&document.getElementById('moverlay').classList.contains('open'))refreshModalPlays(name);
+  renderPlays();renderStats();renderCollection();
+  showToast(isDemo() ? 'Play deleted (demo).' : 'Play deleted from Sheets.','#ff5c7a');
+}
+
+function renderPlays(){
+  const input=document.getElementById('log-game');
+  const gameList=document.getElementById('log-game-list');
+  if(input&&gameList){
+    const cur=input.value;
+    gameList.innerHTML=GAMES.filter(g=>!g.exp&&passesGlobal(g)).map(g=>`<option value="${g.n}"></option>`).join('');
+    if(cur)input.value=cur;
+  }
+  document.getElementById('log-date').valueAsDate=new Date();
+  const list=document.getElementById('play-log-list');
+  if(!plays.length){list.innerHTML='<div class="empty">No plays logged yet.</div>';return;}
+  // Filter play list to only show plays for games that pass global filter
+  const filteredPlays = plays.filter(p => {
+    const g = GAMES.find(x=>x.n===p.game);
+    return !g || passesGlobal(g);
+  });
+  if(!filteredPlays.length){list.innerHTML='<div class="empty">No plays match the current filter.</div>';return;}
+  const sorted=[...filteredPlays].map((p,i)=>({...p,_i:plays.indexOf(p)})).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  list.innerHTML=`<div class="section-label">All Plays — ${filteredPlays.length}${filteredPlays.length!==plays.length?' (filtered, '+plays.length+' total)':''}</div>`+
+    sorted.map(p=>`<div class="pentry">
+      <div class="pmeta">
+        <span class="pdate">${p.date}</span>
+        <span class="pgame" title="${p.game}">${p.game}</span>
+      </div>
+      <button class="pdel" onclick="delPlay(${p._i},null)">✕</button>
+      <div class="psub">
+        <span class="pwinner" style="color:${winnerColor(p.winner)};">${escAttr(winnerDisplayName(p.winner))}</span>
+        ${p.p1Rat?`<span class="badge">${escAttr(playerProfiles.p1.name)}:${p.p1Rat}</span>`:''}
+        ${p.p2Rat?`<span class="badge">${escAttr(playerProfiles.p2.name)}:${p.p2Rat}</span>`:''}
+      </div>
+      ${p.notes?`<div class="pnotes">${p.notes}</div>`:''}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════
+function renderStats(){
+  updatePlayerLabels();
+  renderBattleRosterSettings();
+  const scopedPlays = plays.filter(p=>{const g=GAMES.find(x=>x.n===p.game);return !g||passesGlobal(g);});
+  const p1W=scopedPlays.filter(p=>playerSlotFromWinner(p.winner)==='p1').length;
+  const p2W=scopedPlays.filter(p=>playerSlotFromWinner(p.winner)==='p2').length;
+  const tot=p1W+p2W;
+  const diff=tot?p1W-p2W:0;
+  const p1Rate=tot>0?Math.round(p1W/tot*100):0;
+  const p2Rate=tot>0?Math.round(p2W/tot*100):0;
+  const p1Profile = playerProfiles.p1;
+  const p2Profile = playerProfiles.p2;
+  const leadClass = diff === 0 ? 'tie' : '';
+  const p1Dino = DINO_ROSTER[p1Profile.dino] || DINO_ROSTER.velociraptor;
+  const p2Dino = DINO_ROSTER[p2Profile.dino] || DINO_ROSTER.triceratops;
+  // Fighting-game layout: each health bar is that player's wins relative to the current leader.
+  const topWins=Math.max(p1W,p2W,1);
+  const decisive=scopedPlays.filter(p=>playerSlotFromWinner(p.winner)).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const recentPips=decisive.slice(-5).map(p=>{
+    const slot=playerSlotFromWinner(p.winner);
+    return `<i style="background:${escAttr(playerProfiles[slot].color)}" title="${escAttr(playerProfiles[slot].name)} won ${escAttr(p.game)}"></i>`;
+  }).join('');
+  const callout = diff===0 ? (tot ? 'Even match' : 'Ready?') : `${diff>0?p1Profile.name:p2Profile.name} leads by ${Math.abs(diff)}`;
+  const fighter=(profile,dino,wins,rate,side,leading)=>`
+        <div class="duel-fighter ${side} ${leading?'leading':''} ${diff!==0&&!leading?'trailing':''}" style="--accent:${escAttr(profile.color)}">
+          <div class="duel-sprite"><img src="${dino.asset}" alt="${escAttr(profile.name)}'s ${dino.label}"></div>
+        </div>`;
+  const bar=(profile,dino,wins,side)=>`
+        <div class="duel-bar ${side}" style="--accent:${escAttr(profile.color)}">
+          <div class="duel-bar-track" role="img" aria-label="${escAttr(profile.name)}: ${wins} wins"><span style="width:${Math.round(wins/topWins*100)}%"></span></div>
+          <div class="duel-bar-meta"><strong>${escAttr(profile.name)}</strong><span>${dino.label}</span></div>
+        </div>`;
+  const tally=(wins,rate,side,profile)=>`
+        <div class="duel-tally ${side}" style="--accent:${escAttr(profile.color)}"><strong>${wins}</strong><span>Wins</span><small>${rate}% win rate</small></div>`;
+  document.getElementById('win-stats').innerHTML=`
+    <article class="duel" aria-label="Head to head record">
+      <div class="duel-hud">
+        ${bar(p1Profile,p1Dino,p1W,'p1')}
+        <div class="duel-clock"><strong>${String(tot).padStart(2,'0')}</strong><span>Rounds</span></div>
+        ${bar(p2Profile,p2Dino,p2W,'p2')}
+      </div>
+      <div class="duel-stage">
+        <div class="duel-sun" aria-hidden="true"></div>
+        <div class="duel-ridge" aria-hidden="true"></div>
+        <div class="duel-floor" aria-hidden="true"></div>
+        ${fighter(p1Profile,p1Dino,p1W,p1Rate,'p1',diff>0)}
+        <div class="duel-call"><span class="duel-vs">VS</span><strong class="${leadClass}">${escAttr(callout)}</strong></div>
+        ${fighter(p2Profile,p2Dino,p2W,p2Rate,'p2',diff<0)}
+      </div>
+      <div class="duel-score">
+        ${tally(p1W,p1Rate,'p1',p1Profile)}
+        <div class="duel-form">${recentPips?`<span>Last ${Math.min(decisive.length,5)}</span><div>${recentPips}</div>`:'<span>No rounds yet</span>'}</div>
+        ${tally(p2W,p2Rate,'p2',p2Profile)}
+      </div>
+      <footer class="duel-footer">
+        <span>${tot} decisive play${tot===1?'':'s'}</span>
+        <span>${scopedPlays.length-tot} tie / co-op</span>
+        <span>${scopedPlays.length} total logged</span>
+      </footer>
+    </article>`;
+  renderPlayerFavorites();
+  const map={};
+  plays.forEach(p=>{
+    const g = GAMES.find(x=>x.n===p.game);
+    if(g && !passesGlobal(g)) return; // respect global filter
+    if(!map[p.game])map[p.game]={n:0,j:0,e:0,t:0};
+    map[p.game].n++;
+    if(playerSlotFromWinner(p.winner)==='p1')map[p.game].j++;
+    else if(playerSlotFromWinner(p.winner)==='p2')map[p.game].e++;
+    else map[p.game].t++;
+  });
+  const rows=Object.entries(map).sort((a,b)=>b[1].n-a[1].n);
+  const tb=document.getElementById('stats-body');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:1.8rem;">No plays yet.</td></tr>';return;}
+  tb.innerHTML=rows.map(([name,d])=>{
+    const ldr=d.j>d.e?playerProfiles.p1.name:d.e>d.j?playerProfiles.p2.name:'Tied';
+    const lc=d.j>d.e?'wj':d.e>d.j?'we':'wn';
+    return `<tr>
+      <td data-label="Game" title="${name}">${name.length>42?name.slice(0,40)+'…':name}</td>
+      <td data-label="Plays">${d.n}</td>
+      <td data-label="${escAttr(playerProfiles.p1.name)}"><span class="wp wj">${d.j}</span></td>
+      <td data-label="${escAttr(playerProfiles.p2.name)}"><span class="wp we">${d.e}</span></td>
+      <td data-label="Ties / Co-op">${d.t}</td>
+      <td data-label="Leader"><span class="wp ${lc}">${ldr}</span></td>
+    </tr>`;
+  }).join('');
+  renderTwoPlayer();
+}
+
+function renderPlayerFavorites(){
+  const container = document.getElementById('player-favorites');
+  if(!container) return;
+
+  const ranked = key => GAMES
+    .filter(g => !g.exp && passesGlobal(g) && numericRating(g[key]) !== null)
+    .sort((a,b) => numericRating(b[key]) - numericRating(a[key]) || a.n.localeCompare(b.n))
+    .slice(0,5);
+
+  const renderList = (games,key) => games.length
+    ? games.map((game,index) => `<div class="favorite-row" data-game="${escAttr(game.n)}" role="button" tabindex="0" onclick="openModal(this.dataset.game)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(this.dataset.game)}">
+        <span class="favorite-rank">${index + 1}</span>
+        <span class="favorite-name">${game.n}</span>
+        <span class="favorite-score">${numericRating(game[key])}</span>
+      </div>`).join('')
+    : '<div class="favorites-empty">No ratings yet.</div>';
+
+  const p1Games = ranked('p1Rat');
+  const p2Games = ranked('p2Rat');
+  container.innerHTML = `
+    <div class="favorites-card">
+      <div class="favorites-title">${escAttr(playerProfiles.p1.name)}'s Top Games</div>
+      ${renderList(p1Games,'p1Rat')}
+    </div>
+    <div class="favorites-card p2">
+      <div class="favorites-title">${escAttr(playerProfiles.p2.name)}'s Top Games</div>
+      ${renderList(p2Games,'p2Rat')}
+    </div>`;
+}
+
+function renderTwoPlayer() {
+  // All candidates: Best At contains "2", not expansions, passes global filter
+  // 2-player modes
+  const qualifies2P = g => {
+    const ba  = String(g.ba||'');
+    const bgg = String(g.plBGG||'');
+    if (twoPlayerMode === 'best') return ba.includes('2');
+    return bgg.includes('2') || /1-/.test(bgg); // 'good' mode
+  };
+  const allCandidates = GAMES.filter(g => {
+    if (!passesGlobal(g)) return false;
+    if (g.exp) return false;
+    return qualifies2P(g);
+  });
+
+  // Split into active list (not excluded) and excluded
+  // Excluded = sheet flag OR locally excluded by user OR shelf filter
+  const isExcluded = g =>
+    g.excluded ||
+    twoPlayerExcludedGames.has(g.n) ||
+    [...twoPlayerExcludedShelves].some(s => g.s.toLowerCase().includes(s.toLowerCase()));
+
+  const active   = allCandidates.filter(g => !isExcluded(g));
+  const excluded = allCandidates.filter(g =>  isExcluded(g));
+
+  const unplayed = active.filter(g => !g.played);
+  const played   = active.filter(g =>  g.played);
+  const playedPercent = active.length > 0 ? Math.round(played.length/active.length*100) : 0;
+  const modeLabel = twoPlayerMode === 'best' ? 'Best at 2' : 'Good at 2';
+
+  document.getElementById('twoplayer-stats').innerHTML = `
+    <article class="twoplayer-stat total">
+      <span class="twoplayer-stat-number">${active.length}</span>
+      <span class="twoplayer-stat-label">${modeLabel}</span>
+    </article>
+    <article class="twoplayer-stat played">
+      <span class="twoplayer-stat-number">${played.length}</span>
+      <span class="twoplayer-stat-label">Played Together</span>
+    </article>
+    <article class="twoplayer-stat unplayed">
+      <span class="twoplayer-stat-number">${unplayed.length}</span>
+      <span class="twoplayer-stat-label">Still to Play</span>
+    </article>
+    <article class="twoplayer-stat progress">
+      <span class="twoplayer-stat-number">${playedPercent}<small>%</small></span>
+      <span class="twoplayer-stat-label">Played</span>
+      <span class="twoplayer-progress" aria-hidden="true"><i style="width:${playedPercent}%"></i></span>
+    </article>
+  `;
+
+  // Main table: unplayed first, then played
+  const sorted = [
+    ...unplayed.sort((a,b)=>a.n.localeCompare(b.n)),
+    ...played.sort((a,b)=>a.n.localeCompare(b.n))
+  ];
+
+  document.getElementById('twoplayer-body').innerHTML = sorted.map(g => {
+    const gp = plays.filter(p=>p.game===g.n);
+    const statusColor = g.played ? 'var(--green)' : 'var(--amber)';
+    const statusText  = g.played ? 'Played' : 'Unplayed';
+    return `<tr>
+      <td data-label="Game" role="button" tabindex="0" style="cursor:pointer;" data-game="${g.n.replace(/"/g,'&quot;')}" onclick="openModal(this.dataset.game)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(this.dataset.game)}">${g.n}</td>
+      <td data-label="Shelf"><span class="badge ${sBadge(g.s)}">${g.s}</span></td>
+      <td data-label="Best at" style="font-family:var(--mono);">${g.ba}</td>
+      <td data-label="Status"><span style="color:${statusColor};font-size:13px;font-weight:700;">${statusText}</span>${gp.length?` <span style="color:var(--muted);font-size:12px;">(${gp.length} plays)</span>`:''}</td>
+      <td class="twoplayer-action"><button title="Exclude from list" data-game="${g.n.replace(/"/g,'&quot;')}" onclick="excludeGame(this.dataset.game)"
+        style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:.1rem .3rem;border-radius:4px;transition:color .15s;"
+        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  // Excluded games table
+  const exclCount = document.getElementById('excl-count');
+  if (exclCount) exclCount.textContent = excluded.length ? `(${excluded.length})` : '';
+  document.getElementById('excluded-body').innerHTML = excluded.length
+    ? excluded.sort((a,b)=>a.n.localeCompare(b.n)).map(g => `<tr>
+        <td style="color:var(--text3);">${g.n}</td>
+        <td><span class="badge ${sBadge(g.s)}">${g.s}</span></td>
+        <td class="table-muted">${g.ba}</td>
+        <td><button title="Restore to list" data-game="${g.n.replace(/"/g,'&quot;')}" onclick="includeGame(this.dataset.game)"
+          style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:.1rem .4rem;border-radius:4px;border:1px solid var(--border2);transition:all .15s;"
+          onmouseover="this.style.color='var(--green)';this.style.borderColor='var(--green)'"
+          onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border2)'">↩ Restore</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:1rem;">No excluded games.</td></tr>';
+}
+
+// ═══════════════════════════════════════
+// PICKER
+// ═══════════════════════════════════════
+function pickRandom(){
+  const pool=GAMES.filter(g=>{
+    if(g.excluded) return false;
+    if(!passesGlobal(g)) return false;
+    if(picks.exp==='no'&&g.exp)return false;
+    if(picks.shelf.length && !picks.shelf.some(shelf => hasShelfValue(g.s, shelf))) return false;
+    if(picks.played==='yes'&&!g.played)return false;
+    if(picks.played==='no'&&g.played)return false;
+    if(picks.coop==='yes'&&!isCoop(g))return false;
+    if(picks.coop==='no'&&isCoop(g))return false;
+    if(picks.players&&!supportsPlayerCount(g,picks.players))return false;
+    return true;
+  });
+  const box=document.querySelector('#tab-picker .pick-box');
+  const el=document.getElementById('pick-result');
+  const det=document.getElementById('pick-detail');
+  const cover=document.getElementById('pick-cover');
+  if(!pool.length){el.textContent='No games match';det.textContent='Try relaxing one or two filters.';cover.className='pick-cover pick-empty';cover.removeAttribute('style');cover.innerHTML='<img class="pick-mascot" src="assets/dinos/pterodactyl.png" alt=""><span class="pick-empty-label">No match found</span>';box?.classList.remove('rolling');return;}
+  box?.classList.add('rolling');
+  let c=0;
+  const iv=setInterval(()=>{
+    el.textContent=pool[Math.floor(Math.random()*pool.length)].n;
+    if(++c>13){
+      clearInterval(iv);
+      box?.classList.remove('rolling');
+      const p=pool[Math.floor(Math.random()*pool.length)];
+      el.textContent=p.n;
+      const gp=plays.filter(x=>x.game===p.n);
+      det.innerHTML=`<strong>${p.cat}</strong><span>${p.pl} players</span><span>BGG ${p.bg}</span>${gp.length?`<span>${gp.length} previous play${gp.length===1?'':'s'}</span>`:''}${!p.played?'<span>Never played</span>':''}`;
+      const pickImage=getGameCover(p);
+      cover.innerHTML=pickImage.src
+        ? `<img src="${escAttr(pickImage.src)}" data-fallback="${escAttr(pickImage.fallback)}" alt="${escAttr(p.n)} cover" onload="styleCoverPresentation(this)" onerror="handleCoverError(this)">`
+        : '<img class="pick-mascot" src="assets/dinos/pterodactyl.png" alt=""><span class="pick-empty-label">Cover unavailable</span>';
+    }
+  },72);
+}
+
+// ═══════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ═══════════════════════════════════════
+function cacheGames(){
+  try{ localStorage.setItem('gvc-games', JSON.stringify(GAMES)); }catch(error){}
+}
+
+// All reads go through the user's private Apps Script web app (GET ?action=data).
+async function fetchSheetData(){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),25000);
+  try{
+    const url=cfg.scriptUrl+(cfg.scriptUrl.includes('?')?'&':'?')+'action=data&key='+encodeURIComponent(cfg.accessKey||'');
+    const response=await fetch(url,{cache:'no-store',redirect:'follow',signal:controller.signal});
+    const raw=await response.text();
+    let data;
+    try{ data=JSON.parse(raw); }
+    catch(error){
+      throw new Error(raw.trim().startsWith('<')
+        ? 'Apps Script URL is invalid or not shared with Anyone.'
+        : 'Apps Script returned an unexpected response.');
+    }
+    if(data.status!=='ok') throw new Error(data.message||'Apps Script returned an error.');
+    if(!data.role){
+      throw new Error('This Apps Script deployment is out of date. Paste in the current Code.gs and deploy a new version.');
+    }
+    if(!Array.isArray(data.games)){
+      throw new Error('This Apps Script deployment is out of date. Paste in the current Code.gs and deploy a new version.');
+    }
+    return data;
+  }finally{
+    clearTimeout(timeout);
+  }
+}
+
+function normalizeSheetRows(rows){
+  return (Array.isArray(rows)?rows:[]).map(row=>{
+    const out={};
+    Object.keys(row||{}).forEach(key=>{ out[String(key).trim()]=String(row[key]??'').trim(); });
+    return out;
+  });
+}
+
+function mapGameRow(r) {
+  const isOne = value => {
+    const normalized = String(value ?? '').trim();
+    return normalized === '1' || normalized === '1.0' || Number(normalized) === 1;
+  };
+  const plBGG = (r['Players (BGG)']||r['Players (BGG Comm)']||'').toString().trim();
+  return {
+    n:    r['Game']||'',
+    s:    r['Shelf']||'',
+    pl:   r['Players']||r['Players (Manufacturer)']||'',
+    plBGG: plBGG,
+    ba:   r['Best At']||'',
+    so:   r['Solo']||r['Good solo option']||'',
+    bg:   parseFloat(r['BGG Score'])||0,
+    cat:  r['BGG Category']||'',
+    played:(r['Played']||'').trim().toLowerCase()==='yes',
+    p1Rat: r['P1 Rating']||'',
+    p2Rat: r['P2 Rating']||'',
+    exp:  isOne(r['Expansion'])||(r['Expansion']||'').toLowerCase()==='yes',
+    sell: isOne(r['Potentially sell?']),
+    age:  r['Age']||'',
+    year: r['Year bought']||'',
+    notes:r['Notes']||'',
+    excluded:isOne(r['Excluded']),
+    bggId:(r['BGG ID']||'').toString().trim(),
+    image:(r['BGG Image']||r['Image']||'').toString().trim(),
+    thumb:(r['BGG Thumbnail']||r['Thumbnail']||'').toString().trim(),
+    bggUrl:(r['BGG URL']||'').toString().trim()
+  };
+}
+
+async function syncNow(readForm=true){
+  if(readForm) readConnectionFields();
+  const msg=document.getElementById('sync-msg');
+  const badge=document.getElementById('sync-badge');
+  if(isDemo()){
+    msg.textContent='Demo mode. Connect a sheet to sync.';
+    return;
+  }
+  msg.textContent='⟳ Syncing...';
+  let data;
+  try{
+    data=await fetchSheetData();
+  }catch(error){
+    msg.textContent='⚠ Sync error: '+(error.name==='AbortError'?'Google Sheets took too long to respond.':error.message);
+    console.error(error);
+    return;
+  }
+
+  // "owner" sees everything. "family" never receives spend data, so there is no value to show.
+  cfg.role=data.role;
+  cfg.familyKey=data.role==='owner'?(data.familyKey||''):'';
+  const gameRows=normalizeSheetRows(data.games);
+  if(!gameRows.length || !('Game' in gameRows[0])){
+    msg.textContent='⚠ "Game" column not found in the Games sheet.';
+    return;
+  }
+  GAMES=gameRows.map(mapGameRow).filter(g=>g.n.trim());
+  cacheGames();
+  let totalSpent=0;
+  gameRows.forEach(row=>{
+    const value=parseFloat(String(row['Price Paid']||row['Total']||'').replace(/[$,\s]/g,''));
+    if(!isNaN(value)&&value>0) totalSpent+=value;
+  });
+  if(totalSpent>0) cfg.totalSpent=totalSpent.toFixed(2);
+
+  const playRows=normalizeSheetRows(data.plays).filter(r=>r.Date&&r.Game&&!/^optional$/i.test(r.Date));
+  if(playRows.length){
+    plays=playRows.map(r=>({
+      id:r['Play ID']||'',
+      date:r.Date,
+      game:r.Game,
+      winner:r.Winner||r['Winner Player #']||'',
+      notes:r.Notes||'',
+      p1Rat:r['P1 Rating']||'',
+      p2Rat:r['P2 Rating']||''
+    }));
+    savePlays();
+  }
+
+  const hasPlayers=applyPlayerRows(normalizeSheetRows(data.players));
+  applyStatsRows(normalizeSheetRows(data.stats), hasPlayers);
+  if(cfg.role!=='owner'){ cfg.invested=''; cfg.totalSpent=''; }
+  saveCfg();
+  updateAccessUI();
+
+  badge.className='sstatus st-sheets';
+  badge.textContent='● Google Sheets';
+  msg.textContent='✓ Synced with Google Sheets';
+  populateYearFilter();
+  updatePlayerLabels();
+  renderCollection();renderPlays();renderStats();
+}
+
+function showPlaySyncToast(result){
+  if(result.ok){
+    showToast(result.data?.demo ? 'Play logged. Demo mode: it disappears when you reload.' : 'Play logged and synced.');
+    return;
+  }
+  console.error('Sheets writeback failed:', result.error);
+  showToast(result.error || 'Play saved locally — Sheet sync failed', '#ff5c7a');
+}
+
+async function postToSheets(payload){
+  if(isDemo()){
+    // Nothing leaves the browser in demo mode. Report success so every feature can be tried.
+    return {ok:true,data:{status:'ok',demo:true,playDeleted:true,ratingsUpdated:true}};
+  }
+  try{
+    const response = await fetch(cfg.scriptUrl,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({...payload,key:cfg.accessKey||''}),
+      redirect:'follow'
+    });
+    const raw = await response.text();
+    let result;
+    try{
+      result = JSON.parse(raw);
+    }catch(e){
+      const looksLikeHtml = raw.trim().startsWith('<');
+      throw new Error(looksLikeHtml
+        ? 'Apps Script deployment URL is invalid or not shared with Anyone.'
+        : `Apps Script returned non-JSON (${response.status})`);
+    }
+    if(!response.ok || result.status !== 'ok'){
+      throw new Error(result.message || `Apps Script returned ${response.status}`);
+    }
+    return {ok:true,data:result};
+  }catch(error){
+    return {ok:false,error:error.message || String(error)};
+  }
+}
+
+async function push(p, wasUnplayed){
+  return postToSheets({action:'add',markPlayed:wasUnplayed===true,...p});
+}
+async function pushDel(p){
+  return postToSheets({action:'delete',...p});
+}
+
+// Player #1 and #2 rows from the Players sheet set the names, dinosaurs, and colors.
+function applyPlayerRows(rows){
+  const valueFor=(row,...keys)=>{
+    for(const key of keys){
+      const value=row[key];
+      if(String(value??'').trim()) return value;
+    }
+    return '';
+  };
+  const byNumber=new Map();
+  rows.map(row=>{
+    const lower={};
+    Object.keys(row).forEach(key=>{ lower[key.toLowerCase()]=row[key]; });
+    return lower;
+  }).forEach(row=>{
+    const number=parseInt(valueFor(row,'player #','player','player number'),10);
+    if(number>=1&&number<=6) byNumber.set(number,row);
+  });
+  if(!byNumber.has(1)||!byNumber.has(2)) return false;
+  const toProfile=(row,fallback)=>({
+    name:String(valueFor(row,'name','player name')||fallback.name).trim(),
+    dino:valueFor(row,'dino')||fallback.dino,
+    color:valueFor(row,'color')||fallback.color
+  });
+  playerProfiles=normalizePlayerProfiles({
+    p1:toProfile(byNumber.get(1),playerProfiles.p1),
+    p2:toProfile(byNumber.get(2),playerProfiles.p2)
+  });
+  cfg.playerProfiles=playerProfiles;
+  return true;
+}
+
+// Key/Value rows from the Stats sheet set the collection value (and player profiles when there is no Players sheet).
+function applyStatsRows(rows, hasPlayers){
+  const statsMap={};
+  rows.forEach(row=>{
+    const values=Object.values(row);
+    const key=String(row['Key']||row['key']||values[0]||'').trim().toLowerCase();
+    const value=String(row['Value']||row['value']||values[1]||'').trim().replace(/[$,\s]/g,'');
+    if(key) statsMap[key]=value;
+  });
+  if(!hasPlayers){
+    playerProfiles=normalizePlayerProfiles({
+      p1:{
+        name:statsMap['p1 name']||playerProfiles.p1.name,
+        dino:statsMap['p1 dino']||playerProfiles.p1.dino,
+        color:statsMap['p1 color']||playerProfiles.p1.color
+      },
+      p2:{
+        name:statsMap['p2 name']||playerProfiles.p2.name,
+        dino:statsMap['p2 dino']||playerProfiles.p2.dino,
+        color:statsMap['p2 color']||playerProfiles.p2.color
+      }
+    });
+    cfg.playerProfiles=playerProfiles;
+  }
+  const number=key=>{ const value=parseFloat(statsMap[key]); return isNaN(value)?null:value; };
+  let finalValue=null;
+  if(number('effective')!==null) finalValue=number('effective');
+  else if(number('spent')!==null&&number('sold')!==null) finalValue=number('spent')-number('sold');
+  else if(cfg.totalSpent&&number('sold')!==null) finalValue=parseFloat(cfg.totalSpent)-number('sold');
+  else if(cfg.totalSpent) finalValue=parseFloat(cfg.totalSpent);
+  cfg.invested=finalValue!==null&&!isNaN(finalValue)?Math.round(finalValue).toLocaleString('en-US'):'';
+}
+
+function readConnectionFields(){
+  const scriptUrl=document.getElementById('cfg-script')?.value.trim()||'';
+  const accessKey=document.getElementById('cfg-key')?.value.trim()||'';
+  if(scriptUrl!==cfg.scriptUrl||accessKey!==cfg.accessKey){ cfg.invested=''; cfg.role=''; cfg.familyKey=''; }
+  cfg.scriptUrl=scriptUrl;
+  cfg.accessKey=accessKey;
+  saveCfg();
+}
+
+// Settings wording and buttons depend on which kind of access this device has.
+function updateAccessUI(){
+  const owner=cfg.role==='owner';
+  updateBggUI();
+  const own=document.getElementById('invite-own');
+  const family=document.getElementById('invite-family');
+  const note=document.getElementById('invite-note');
+  if(own) own.textContent=owner?'Copy full-access link':'Copy invite link';
+  if(family) family.hidden=!(owner&&cfg.familyKey);
+  if(note) note.textContent=owner
+    ? 'Full-access link: everything you see, including spend and collection value. Family link: the collection plus logging plays and ratings, with no spend data or collection value. For view-only sharing, send the share page instead.'
+    : 'An invite link connects another phone or computer in one step, with the same access as this one.';
+}
+
+async function saveConfig(){
+  const wasDemo=isDemo();
+  readConnectionFields();
+  if(wasDemo&&!isDemo()){ location.reload(); return; }
+  showToast('Connection saved.');
+  await verifyScriptConnection();
+  await syncNow(false);
+}
+
+// An invite link carries the script URL in the part after "#", which browsers never send to a server.
+// Opening it connects that device in one step. Anyone holding the link gets full view and edit access.
+const LOCAL_DEV=['localhost','127.0.0.1'].includes(location.hostname);
+const SCRIPT_URL_PATTERN={test:url=>/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url)||(LOCAL_DEV&&/^http:\/\/(localhost|127\.0\.0\.1):\d+\/exec$/.test(url))};
+
+async function copyInviteLink(kind){
+  readConnectionFields();
+  const key=kind==='family'?cfg.familyKey:cfg.accessKey;
+  if(!SCRIPT_URL_PATTERN.test(cfg.scriptUrl)||!key){
+    showToast('Connect and sync this device first.','#ff5c7a');
+    return;
+  }
+  const link=`${location.origin}${location.pathname}#connect=${encodeURIComponent(cfg.scriptUrl)}&key=${encodeURIComponent(key)}`;
+  // Always show the link as well: some browsers report a successful copy without updating the system clipboard.
+  const copied=await copyText(link);
+  const box=document.getElementById('invite-output');
+  if(box){
+    box.hidden=false;
+    box.querySelector('label').textContent=(kind==='family'?'Family link':'Full-access link')+(copied?' (copied; or select it here)':' (select all and copy)');
+    const field=box.querySelector('input');
+    field.value=link;
+    field.focus();
+    field.select();
+  }
+  showToast(copied
+    ? (kind==='family'?'Family link copied.':'Full-access link copied. Share it only with people you trust.')
+    : 'Could not copy automatically. Copy the link shown below the buttons.', copied?undefined:'#ffe04a');
+}
+
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  }catch(error){}
+  try{
+    const area=document.createElement('textarea');
+    area.value=text;
+    area.setAttribute('readonly','');
+    area.style.cssText='position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(area);
+    area.select();
+    const ok=document.execCommand('copy');
+    area.remove();
+    return ok;
+  }catch(error){
+    return false;
+  }
+}
+
+// Accepts a full invite link (or just the part after "#") and returns {url, key}, or null.
+function parseInviteLink(text){
+  const raw=String(text||'').trim();
+  const at=raw.indexOf('connect=');
+  if(at<0) return null;
+  const match=raw.slice(at).match(/^connect=([^&\s]+)&key=([^&\s]+)/);
+  if(!match) return null;
+  let url='',key='';
+  try{ url=decodeURIComponent(match[1]); key=decodeURIComponent(match[2]); }catch(error){ return null; }
+  if(!SCRIPT_URL_PATTERN.test(url)||!/^[A-Za-z0-9]{16,128}$/.test(key)) return null;
+  return {url,key};
+}
+
+function connectWith(invite){
+  // Leaving demo mode: drop the sample data so it can never mix with a real collection.
+  if(isDemo()){
+    GAMES=[]; plays=[];
+    playerProfiles=normalizePlayerProfiles(null);
+  }
+  cfg.scriptUrl=invite.url;
+  cfg.accessKey=invite.key;
+  cfg.invested='';
+  cfg.role='';
+  cfg.familyKey='';
+  saveCfg();
+  const field=document.getElementById('cfg-script');
+  if(field) field.value=invite.url;
+  const keyField=document.getElementById('cfg-key');
+  if(keyField) keyField.value=invite.key;
+}
+
+function acceptInviteLink(){
+  if(!location.hash.startsWith('#connect=')) return false;
+  const invite=parseInviteLink(location.hash);
+  history.replaceState(null,'',location.pathname+location.search);
+  if(!invite){
+    showToast('That invite link is not valid.','#ff5c7a');
+    return false;
+  }
+  connectWith(invite);
+  showToast('Connected. Loading the collection...');
+  return true;
+}
+
+// On iPhone, an app added to the home screen keeps its own storage, separate from Safari,
+// and links always open in Safari. Pasting the invite link here connects the app itself.
+async function connectFromPastedInvite(inputId){
+  const input=document.getElementById(inputId);
+  const text=String(input?.value||'').trim();
+  let invite=parseInviteLink(text);
+  if(!invite&&SCRIPT_URL_PATTERN.test(text)){
+    // A bare web app URL: ask the sheet to make this device its owner. Only the first device can.
+    showToast('Connecting to your sheet...');
+    try{
+      const response=await fetch(text+'?action=claim',{cache:'no-store',redirect:'follow'});
+      const raw=await response.text();
+      let claim;
+      try{ claim=JSON.parse(raw); }
+      catch(error){ throw new Error('That web app is not reachable. Check that "Who has access" is set to Anyone.'); }
+      if(claim.status!=='ok'||!claim.ownerKey) throw new Error(claim.message||'The sheet did not accept the connection.');
+      invite={url:text,key:claim.ownerKey};
+    }catch(error){
+      showToast(error.message||String(error),'#ff5c7a');
+      return;
+    }
+  }
+  if(!invite){
+    showToast('Paste your web app URL (ends in /exec) or a whole invite link.','#ff5c7a');
+    return;
+  }
+  connectWith(invite);
+  if(input) input.value='';
+  showToast('Connected. Loading the collection...');
+  updateAccessUI();
+  updateDemoUI();
+  renderCollection();
+  await verifyScriptConnection();
+  await syncNow(false);
+}
+
+// Forget this device's connection and saved copy, and go back to the sample data.
+function disconnectSheet(){
+  if(!window.confirm('Disconnect this device from your sheet? Your sheet is not changed. This device returns to the sample data.')) return;
+  ['gvc-cfg','gvc-games','gvc-plays','gvc-2p-excl'].forEach(key=>localStorage.removeItem(key));
+  location.href=location.pathname;
+}
+
+// Optional links come from config.js. A link with no address stays hidden.
+function applyProjectLinks(){
+  const config=window.GAME_VAULT_CONFIG||{};
+  [['repo-link',config.repoUrl],['support-link',config.supportUrl]].forEach(([id,url])=>{
+    const link=document.getElementById(id);
+    if(!link) return;
+    const ok=/^https:\/\//.test(url||'');
+    link.hidden=!ok;
+    if(ok) link.href=url;
+  });
+}
+
+function updateDemoUI(){
+  const demo=isDemo();
+  const banner=document.getElementById('demo-banner');
+  if(banner) banner.hidden=!demo;
+  const disconnect=document.getElementById('disconnect-button');
+  if(disconnect) disconnect.hidden=demo;
+  const badge=document.getElementById('sync-badge');
+  if(badge&&demo){ badge.className='sstatus st-local'; badge.textContent='● Demo data'; }
+}
+
+async function verifyScriptConnection(){
+  const status=document.getElementById('script-connection-status');
+  if(!status) return;
+  if(isDemo()){
+    status.textContent='';
+    return;
+  }
+  status.textContent='Testing write connection...';
+  status.style.color='var(--text3)';
+  const result=await postToSheets({action:'ping'});
+  if(result.ok){
+    status.textContent='✓ Apps Script write connection ready';
+    status.style.color='var(--green)';
+  }else{
+    status.textContent='⚠ '+result.error;
+    status.style.color='var(--red)';
+  }
+}
+
+function loadCfgUI(){
+  const field=document.getElementById('cfg-script');
+  if(field&&cfg.scriptUrl) field.value=cfg.scriptUrl;
+  const keyField=document.getElementById('cfg-key');
+  if(keyField&&cfg.accessKey) keyField.value=cfg.accessKey;
+  updateAccessUI();
+  if(GAMES.length&&!isDemo()){
+    document.getElementById('sync-badge').className='sstatus st-sheets';
+    document.getElementById('sync-badge').textContent='● Saved copy';
+  }
+  verifyScriptConnection();
+}
+
+// ═══════════════════════════════════════
+// BOARDGAMEGEEK LOOKUP
+// ═══════════════════════════════════════
+// The lookup service address comes from config.js. The browser sends it a search
+// phrase, BGG IDs, or a BGG username, and nothing about the sheet. Results are
+// written to the sheet by the sheet's own script, and only by the owner.
+const BGG_SERVICE_URL = (()=>{
+  const onLocalhost=['localhost','127.0.0.1'].includes(location.hostname);
+  // For development only: on localhost, a stand-in service can be set with localStorage 'gvc-dev-bgg'.
+  let devUrl='';
+  try{ devUrl=onLocalhost ? (localStorage.getItem('gvc-dev-bgg')||'') : ''; }catch(error){}
+  const url=String(devUrl||(window.GAME_VAULT_CONFIG||{}).bggServiceUrl||'').trim();
+  const local=onLocalhost && /^http:\/\/localhost:\d+\//.test(url);
+  return /^https:\/\//.test(url)||local ? url : '';
+})();
+let bggCollection=null; // {user, items} from the last "Find games"
+let bggBusy=false;
+
+function updateBggUI(){
+  const card=document.getElementById('bgg-card');
+  if(!card) return;
+  card.hidden=!(BGG_SERVICE_URL && (isDemo()||cfg.role==='owner'));
+  const options=document.getElementById('bgg-shelf-options');
+  if(options) options.replaceChildren(...getAvailableShelves().map(shelf=>{ const o=document.createElement('option'); o.value=shelf; return o; }));
+}
+
+async function bggGet(params){
+  const response=await fetch(BGG_SERVICE_URL+'?'+new URLSearchParams(params),{redirect:'follow'});
+  let data;
+  try{ data=await response.json(); }catch(error){ throw new Error('The lookup service did not answer. Try again in a minute.'); }
+  if(data.status!=='ok'&&data.status!=='pending') throw new Error(data.message||'The lookup failed.');
+  return data;
+}
+
+function bggShelf(){
+  return (document.getElementById('bgg-shelf').value||'').trim()||'Unsorted';
+}
+
+function bggToRow(game,shelf){
+  return {
+    'Game':game.name, 'Shelf':shelf, 'Expansion':game.expansion?'Yes':'',
+    'Players':game.players, 'Players (BGG)':game.playersCommunity, 'Best At':game.bestAt,
+    'Solo':game.solo, 'Age':game.age, 'BGG Score':game.score, 'BGG Category':game.category,
+    'BGG ID':game.bggId, 'BGG URL':game.url, 'BGG Thumbnail':game.thumbnail, 'BGG Image':game.image
+  };
+}
+
+function bggFindOwned(id,name){
+  const key=String(name||'').trim().toLowerCase();
+  return GAMES.find(g=>(id&&String(g.bggId)===String(id))||g.n.trim().toLowerCase()===key);
+}
+
+// Saves rows through the sheet's script. In demo mode the games are added to this page only.
+async function bggSaveRows(rows){
+  const total={added:0,updated:0,unchanged:0};
+  if(isDemo()){
+    rows.forEach(row=>{
+      if(bggFindOwned(row['BGG ID'],row['Game'])){ total.unchanged++; return; }
+      GAMES.push(mapGameRow(row)); total.added++;
+    });
+    return total;
+  }
+  const result=await postToSheets({action:'saveGames',games:rows});
+  if(!result.ok){
+    throw new Error(/unknown action/i.test(result.error||'')
+      ? 'Your sheet has an older script that cannot add games. Copy the latest script from the setup guide, then deploy a new version.'
+      : (result.error||'The sheet did not save the games.'));
+  }
+  ['added','updated','unchanged'].forEach(key=>{ total[key]+=Number(result.data?.[key]||0); });
+  return total;
+}
+
+async function bggRefreshAfterSave(){
+  if(isDemo()){
+    normalizeShelfSelections(); renderShelfControls(); populateYearFilter();
+    renderCollection(); renderStats();
+  }else{
+    await syncNow(false);
+    renderShelfControls();
+  }
+  updateBggUI();
+}
+
+async function bggSearch(){
+  const box=document.getElementById('bgg-results');
+  const query=document.getElementById('bgg-query').value.trim();
+  if(query.length<2){ box.textContent='Type at least two letters.'; return; }
+  if(bggBusy) return;
+  bggBusy=true;
+  box.textContent='Searching BoardGameGeek…';
+  try{
+    const data=await bggGet({action:'search',q:query});
+    box.replaceChildren();
+    if(!data.results.length){ box.textContent='No games found. Check the spelling, or try fewer words.'; return; }
+    data.results.forEach(result=>{
+      const row=document.createElement('div'); row.className='bgg-result';
+      const label=document.createElement('span'); label.className='bgg-result-name';
+      label.textContent=result.name+(result.year?` (${result.year})`:'');
+      if(result.expansion){ const tag=document.createElement('em'); tag.textContent='Expansion'; label.append(' ',tag); }
+      const button=document.createElement('button'); button.type='button'; button.className='btn btn-outline btn-sm';
+      const owned=bggFindOwned(result.id,'');
+      button.textContent=owned?'In your vault':'Add';
+      button.disabled=Boolean(owned);
+      button.onclick=()=>bggAddGame(result.id,button);
+      row.append(label,button); box.append(row);
+    });
+  }catch(error){
+    box.textContent='⚠ '+error.message;
+  }finally{ bggBusy=false; }
+}
+
+async function bggAddGame(id,button){
+  if(bggBusy) return;
+  bggBusy=true;
+  button.disabled=true; button.textContent='Adding…';
+  try{
+    const data=await bggGet({action:'thing',ids:id});
+    if(!data.games.length) throw new Error('BoardGameGeek did not return that game.');
+    const total=await bggSaveRows([bggToRow(data.games[0],bggShelf())]);
+    await bggRefreshAfterSave();
+    button.textContent='In your vault';
+    showToast(total.added ? `${data.games[0].name} added.`+(isDemo()?' Demo mode: it disappears when you reload.':'') : `${data.games[0].name} is already in your vault.`);
+  }catch(error){
+    button.disabled=false; button.textContent='Add';
+    showToast(error.message,'#ff5c7a');
+  }finally{ bggBusy=false; }
+}
+
+function bggCollectionItems(){
+  if(!bggCollection) return [];
+  const withExpansions=document.getElementById('bgg-expansions').checked;
+  return bggCollection.items.filter(item=>withExpansions||!item.expansion);
+}
+
+function bggShowCollectionSummary(){
+  const status=document.getElementById('bgg-import-status');
+  const go=document.getElementById('bgg-import-go');
+  if(!bggCollection){ go.hidden=true; return; }
+  const items=bggCollectionItems();
+  const fresh=items.filter(item=>!bggFindOwned(item.id,item.name)).length;
+  const expansions=bggCollection.items.filter(item=>item.expansion).length;
+  status.textContent=items.length
+    ? `${bggCollection.user} owns ${items.length} game${items.length===1?'':'s'}`+(expansions&&!document.getElementById('bgg-expansions').checked?` (plus ${expansions} expansion${expansions===1?'':'s'}, not included)`:'')+`. ${fresh} ${fresh===1?'is':'are'} new to your vault.`
+    : `${bggCollection.user} has no owned games listed on BoardGameGeek.`;
+  go.hidden=!items.length;
+  go.textContent=`Import ${items.length} game${items.length===1?'':'s'}`;
+}
+
+async function bggFindCollection(){
+  const status=document.getElementById('bgg-import-status');
+  const user=document.getElementById('bgg-user').value.trim();
+  if(!user){ status.textContent='Type a BoardGameGeek username.'; return; }
+  if(bggBusy) return;
+  bggBusy=true;
+  bggCollection=null;
+  document.getElementById('bgg-import-go').hidden=true;
+  try{
+    // BoardGameGeek prepares a collection in the background, so the first answers can be "not ready yet".
+    for(let attempt=0; attempt<10; attempt++){
+      status.textContent=attempt?'BoardGameGeek is preparing the collection. Still waiting…':'Asking BoardGameGeek…';
+      const data=await bggGet({action:'collection',user});
+      if(data.status==='ok'){ bggCollection={user:data.user,items:data.items}; break; }
+      await new Promise(resolve=>setTimeout(resolve,BGG_RETRY_MS));
+    }
+    if(!bggCollection) throw new Error('BoardGameGeek is taking too long. Try again in a few minutes.');
+    bggShowCollectionSummary();
+  }catch(error){
+    status.textContent='⚠ '+error.message;
+  }finally{ bggBusy=false; }
+}
+const BGG_RETRY_MS=['localhost','127.0.0.1'].includes(location.hostname)?300:4000;
+
+async function bggImportCollection(){
+  const status=document.getElementById('bgg-import-status');
+  const go=document.getElementById('bgg-import-go');
+  const items=bggCollectionItems();
+  if(!items.length||bggBusy) return;
+  bggBusy=true;
+  go.disabled=true;
+  const shelf=bggShelf();
+  const total={added:0,updated:0,unchanged:0};
+  let done=0;
+  try{
+    for(let start=0; start<items.length; start+=20){
+      status.textContent=`Importing… ${done} of ${items.length} games.`;
+      const batch=items.slice(start,start+20);
+      const data=await bggGet({action:'thing',ids:batch.map(item=>item.id).join(',')});
+      // Save each batch as it arrives, so a dropped connection keeps what was already imported.
+      const saved=await bggSaveRows(data.games.map(game=>bggToRow(game,shelf)));
+      ['added','updated','unchanged'].forEach(key=>{ total[key]+=saved[key]; });
+      done+=batch.length;
+    }
+    await bggRefreshAfterSave();
+    status.textContent=`Done. ${total.added} added, ${total.updated} filled in, ${total.unchanged} already complete.`+(isDemo()?' Demo mode: they disappear when you reload.':'');
+    go.hidden=true;
+    bggCollection=null;
+  }catch(error){
+    if(done) await bggRefreshAfterSave();
+    status.textContent=`⚠ Stopped after ${done} of ${items.length} games: ${error.message} Importing again picks up where it left off.`;
+  }finally{ bggBusy=false; go.disabled=false; }
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(msg,color='#6dff5a'){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.background=color;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+let pendingServiceWorker = null;
+function setUpdateBannerVisible(visible){
+  const banner = document.getElementById('update-banner');
+  if (!banner) return;
+  banner.classList.toggle('show', visible);
+  banner.setAttribute('aria-hidden', visible ? 'false' : 'true');
+}
+
+function promptForUpdate(worker){
+  pendingServiceWorker = worker || pendingServiceWorker;
+  setUpdateBannerVisible(Boolean(pendingServiceWorker));
+}
+
+function dismissUpdateBanner(){
+  pendingServiceWorker = null;
+  setUpdateBannerVisible(false);
+}
+
+function applyPendingUpdate(){
+  if (!pendingServiceWorker) return;
+  setUpdateBannerVisible(false);
+  pendingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  acceptInviteLink();
+  updateDemoUI();
+  applyProjectLinks();
+  updateBggUI();
+  loadCfgUI();
+  updatePlayerLabels();
+  populateYearFilter();
+  if(!isDemo()){ cfg.invested = ''; saveCfg(); } // always fetch the value fresh on load
+
+  const gfKidsEl = document.getElementById('gf-kids');
+  const gfYearEl = document.getElementById('gf-year');
+  if (gfKidsEl) gfKidsEl.value = globalFilters.kids || '1';
+  if (gfYearEl) gfYearEl.value = globalFilters.year || '';
+  syncKidsFilterButtons();
+
+  const msg = document.getElementById('gf-active-msg');
+  if (msg) msg.style.display = (globalFilters.kids === '0' || globalFilters.year) ? 'block' : 'none';
+
+  renderCollection();
+  renderStats();
+  if(cfg.scriptUrl) syncNow(false);
+
+  document.getElementById('update-banner-refresh')?.addEventListener('click', applyPendingUpdate);
+  document.getElementById('update-banner-dismiss')?.addEventListener('click', dismissUpdateBanner);
+  const requestedTab=new URLSearchParams(window.location.search).get('tab');
+  if(requestedTab&&['collection','picker','plays','stats','settings'].includes(requestedTab)){
+    document.querySelector(`.nav-tab[data-tab="${requestedTab}"]`)?.click();
+  }
+});
+
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&document.getElementById('moverlay')?.classList.contains('open')) closeModal();
+});
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' });
+
+      if (registration.waiting) {
+        promptForUpdate(registration.waiting);
+      }
+
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            promptForUpdate(newWorker);
+          }
+        });
+      });
+
+      registration.update();
+    } catch (err) {
+      console.error('Service worker registration failed:', err);
+    }
+  });
+}
+</script>
+</body>
+</html>

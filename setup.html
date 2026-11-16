@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Set up your own Game Vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cabinet.css">
+<script src="config.js"></script>
+<meta name="theme-color" content="#0a0818">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+</head>
+<body>
+<main class="guide">
+  <div class="guide-top">
+    <img class="brand-mark" src="assets/logo-192.png" alt="" width="48" height="48">
+    <span class="brand-title">Game Vault</span>
+  </div>
+
+  <div class="eyebrow">Setup guide</div>
+  <h1>Make it yours in about five minutes</h1>
+  <p class="lead">Game Vault keeps your collection in a Google Sheet that you own. There is no account to create and nothing to install. You need a Google account and a computer for the setup; after that it works on your phone.</p>
+
+  <section class="guide-step">
+    <h2><span>1</span>Copy the sheet</h2>
+    <ol>
+      <li>Open the Game Vault sheet and choose <strong>Make a copy</strong>. The copy is yours alone.</li>
+      <li>On the <strong>Players</strong> tab, type your two player names and pick a dinosaur and color for each.</li>
+      <li>On the <strong>Games</strong> tab, replace the sample rows with your games. Only the <strong>Game</strong> column is required.</li>
+    </ol>
+    <div class="guide-actions">
+      <a class="btn btn-gold" id="template-link" href="#" target="_blank" rel="noopener" hidden>Copy the Game Vault sheet</a>
+      <a class="btn btn-outline" href="sheet/Game-Vault-Template.xlsx" download>Download as a spreadsheet file</a>
+    </div>
+    <p class="guide-note" id="template-pending">The one-click copy link is being prepared. Until then, download the spreadsheet file, upload it to Google Drive, open it with Google Sheets, then add the script: in the sheet choose Extensions &gt; Apps Script and paste in the contents of <a href="sheet/Code.gs">Code.gs</a>.</p>
+  </section>
+
+  <section class="guide-step">
+    <h2><span>2</span>Switch on the connection</h2>
+    <ol>
+      <li>In your sheet, choose <strong>Extensions &gt; Apps Script</strong>.</li>
+      <li>Click <strong>Deploy &gt; New deployment</strong>. Click the gear icon and choose <strong>Web app</strong>.</li>
+      <li>Set <strong>Execute as</strong> to <strong>Me</strong> and <strong>Who has access</strong> to <strong>Anyone</strong>. Click <strong>Deploy</strong>.</li>
+      <li>Click <strong>Authorize access</strong> and choose your account.</li>
+      <li>Copy the <strong>Web app URL</strong>. It ends in <code>/exec</code>.</li>
+    </ol>
+    <p class="guide-note">Google shows a "Google hasn't verified this app" notice for any script you copy yourself. That is expected: the script belongs to you and runs only inside your own sheet. Choose <strong>Advanced</strong>, then <strong>Go to Game Vault</strong>, then <strong>Allow</strong>. It asks to see and edit only the spreadsheet it is attached to.</p>
+  </section>
+
+  <section class="guide-step">
+    <h2><span>3</span>Connect the app</h2>
+    <ol>
+      <li>Open <a href="app.html">Game Vault</a> and go to <strong>Settings</strong>.</li>
+      <li>Paste the Web app URL and tap <strong>Connect</strong>. Your collection replaces the sample games.</li>
+      <li>To add your phone or another person, tap <strong>Copy full-access link</strong> or <strong>Copy family link</strong> in Settings and open that link on the other device.</li>
+      <li>Optional: in Settings, use the <strong>BoardGameGeek</strong> card to add a game by name or import the games you own on BoardGameGeek. Player counts, scores, and covers are filled in for you.</li>
+    </ol>
+    <p class="guide-note">On iPhone, an app added to the home screen keeps its own settings. Add Game Vault to your home screen first, open it from there, and paste the invite link into its Settings.</p>
+  </section>
+
+  <section class="guide-step">
+    <h2><span>?</span>How your data is protected</h2>
+    <ul>
+      <li><strong>Your collection stays in your Google account.</strong> The app has no server and no database of its own.</li>
+      <li><strong>The first device to connect becomes the owner.</strong> After that, the web app URL alone does nothing; every device needs a key that only you can hand out.</li>
+      <li><strong>Family links never receive prices or notes.</strong> People using one can browse and log plays, and that is all.</li>
+      <li><strong>You can cut everyone off.</strong> In your sheet, choose <strong>Game Vault &gt; Reset access keys</strong>, then connect again.</li>
+      <li><strong>Do not use "Publish to web".</strong> The app does not need it, and it would make that tab public.</li>
+    </ul>
+  </section>
+
+  <div class="guide-actions">
+    <a class="btn btn-outline" href="app.html">Open the demo</a>
+    <a class="btn btn-outline" href="index.html">About Game Vault</a>
+    <a class="btn btn-outline" id="repo-link" href="#" target="_blank" rel="noopener" hidden>Source code</a>
+    <a class="btn btn-outline" id="support-link" href="#" target="_blank" rel="noopener" hidden>Support the project</a>
+  </div>
+</main>
+<script>
+(() => {
+  const config = window.GAME_VAULT_CONFIG || {};
+  const show = (id, url) => {
+    const link = document.getElementById(id);
+    const ok = /^https:\/\//.test(url || '');
+    if (link) { link.hidden = !ok; if (ok) link.href = url; }
+    return ok;
+  };
+  const hasTemplate = show('template-link', config.templateCopyUrl);
+  document.getElementById('template-pending').hidden = hasTemplate;
+  show('repo-link', config.repoUrl);
+  show('support-link', config.supportUrl);
+})();
+</script>
+</body>
+</html>
